@@ -61,102 +61,102 @@ mapping_type={'Center':0,'Donut':1,'Edge-Loc':2,'Edge-Ring':3,'Loc':4,'Random':5
 mapping_traintest={'Training':0,'Test':1}
 df=df.replace({'failureNum':mapping_type, 'trainTestNum':mapping_traintest})
 
-# tol_wafers = df.shape[0]
-# tol_wafers
+tol_wafers = df.shape[0]
+tol_wafers
 
 df_withlabel = df[(df['failureNum']>=0) & (df['failureNum']<=8)]
 df_withlabel =df_withlabel.reset_index()
 df_withpattern = df[(df['failureNum']>=0) & (df['failureNum']<=7)]
 df_withpattern = df_withpattern.reset_index()
 df_nonpattern = df[(df['failureNum']==8)]
-# df_withlabel.shape[0], df_withpattern.shape[0], df_nonpattern.shape[0]
+df_withlabel.shape[0], df_withpattern.shape[0], df_nonpattern.shape[0]
 
-# fig = plt.figure(figsize=(20, 4.5))
-# gs = gridspec.GridSpec(1, 2, width_ratios=[1, 2.5])
-# ax1 = plt.subplot(gs[0])
-# ax2 = plt.subplot(gs[1])
+fig = plt.figure(figsize=(20, 4.5))
+gs = gridspec.GridSpec(1, 2, width_ratios=[1, 2.5])
+ax1 = plt.subplot(gs[0])
+ax2 = plt.subplot(gs[1])
 
-# no_wafers=[tol_wafers-df_withlabel.shape[0], df_withpattern.shape[0], df_nonpattern.shape[0]]
+no_wafers=[tol_wafers-df_withlabel.shape[0], df_withpattern.shape[0], df_nonpattern.shape[0]]
 
-# colors = ['silver', 'orange', 'gold']
-# explode = (0.1, 0, 0)  # explode 1st slice
-# labels = ['no-label','label&pattern','label&non-pattern']
-# ax1.pie(no_wafers, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%', shadow=True, startangle=140)
-#
-# uni_pattern=np.unique(df_withpattern.failureNum, return_counts=True)
-# labels2 = ['','Center','Donut','Edge-Loc','Edge-Ring','Loc','Random','Scratch','Near-full']
-# ax2.bar(uni_pattern[0],uni_pattern[1]/df_withpattern.shape[0], color='gold', align='center', alpha=0.9)
-# ax2.set_title("failure type frequency")
-# ax2.set_ylabel("% of pattern wafers")
-# ax2.set_xticklabels(labels2)
-# plt.show()
+colors = ['silver', 'orange', 'gold']
+explode = (0.1, 0, 0)  # explode 1st slice
+labels = ['no-label','label&pattern','label&non-pattern']
+ax1.pie(no_wafers, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%', shadow=True, startangle=140)
 
-# fig, ax = plt.subplots(nrows = 10, ncols = 10, figsize=(20, 20))
-# ax = ax.ravel(order='C')    # flatten() 함수랑 비슷함. 옵션 order=C,F,K
-#                             # order='C': C와 같은 순서로 인덱싱하여 평평하게 배열 (디폴트)
-#                             # order='F': Fortran과 같은 순서로 인덱싱하여 평평하게 배열
-#                             # order='K': 메모리에서 발생하는 순서대로 인덱싱하여 평평하게 배열
-# for i in range(100):
-#     img = df_withpattern.waferMap[i]
-#     ax[i].imshow(img)
-#     ax[i].set_title(df_withpattern.failureType[i][0][0], fontsize=10)
-#     ax[i].set_xlabel(df_withpattern.index[i], fontsize=8)
-#     ax[i].set_xticks([])
-#     ax[i].set_yticks([])
-# plt.tight_layout()
-# plt.show()
+uni_pattern=np.unique(df_withpattern.failureNum, return_counts=True)
+labels2 = ['','Center','Donut','Edge-Loc','Edge-Ring','Loc','Random','Scratch','Near-full']
+ax2.bar(uni_pattern[0],uni_pattern[1]/df_withpattern.shape[0], color='gold', align='center', alpha=0.9)
+ax2.set_title("failure type frequency")
+ax2.set_ylabel("% of pattern wafers")
+ax2.set_xticklabels(labels2)
+plt.show()
 
-# x = [0,1,2,3,4,5,6,7]
-# labels2 = ['Center','Donut','Edge-Loc','Edge-Ring','Loc','Random','Scratch','Near-full']
-#
-# for k in x:
-#     fig, ax = plt.subplots(nrows = 1, ncols = 10, figsize=(18, 12))
-#     ax = ax.ravel(order='C')
-#     for j in [k]:
-#         img = df_withpattern.waferMap[df_withpattern.failureType==labels2[j]]
-#         for i in range(10):
-#             ax[i].imshow(img[img.index[i]])
-#             ax[i].set_title(df_withpattern.failureType[img.index[i]][0][0], fontsize=10)
-#             ax[i].set_xlabel(df_withpattern.index[img.index[i]], fontsize=10)
-#             ax[i].set_xticks([])
-#             ax[i].set_yticks([])
-#     plt.tight_layout()
-#     plt.show()
+fig, ax = plt.subplots(nrows = 10, ncols = 10, figsize=(20, 20))
+ax = ax.ravel(order='C')    # flatten() 함수랑 비슷함. 옵션 order=C,F,K
+                            # order='C': C와 같은 순서로 인덱싱하여 평평하게 배열 (디폴트)
+                            # order='F': Fortran과 같은 순서로 인덱싱하여 평평하게 배열
+                            # order='K': 메모리에서 발생하는 순서대로 인덱싱하여 평평하게 배열
+for i in range(100):
+    img = df_withpattern.waferMap[i]
+    ax[i].imshow(img)
+    ax[i].set_title(df_withpattern.failureType[i][0][0], fontsize=10)
+    ax[i].set_xlabel(df_withpattern.index[i], fontsize=8)
+    ax[i].set_xticks([])
+    ax[i].set_yticks([])
+plt.tight_layout()
+plt.show()
 
-# x = [9,340, 3, 16, 0, 25, 84, 37]
-# labels2 = ['Center','Donut','Edge-Loc','Edge-Ring','Loc','Random','Scratch','Near-full']
-#
-# #ind_def = {'Center': 9, 'Donut': 340, 'Edge-Loc': 3, 'Edge-Ring': 16, 'Loc': 0, 'Random': 25,  'Scratch': 84, 'Near-full': 37}
-# fig, ax = plt.subplots(nrows = 2, ncols = 4, figsize=(20, 10))
-# ax = ax.ravel(order='C')
-# for i in range(8):
-#     img = df_withpattern.waferMap[x[i]]
-#     ax[i].imshow(img)
-#     ax[i].set_title(df_withpattern.failureType[x[i]][0][0],fontsize=24)
-#     ax[i].set_xticks([])
-#     ax[i].set_yticks([])
-# plt.tight_layout()
-# plt.show()
+x = [0,1,2,3,4,5,6,7]
+labels2 = ['Center','Donut','Edge-Loc','Edge-Ring','Loc','Random','Scratch','Near-full']
+
+for k in x:
+    fig, ax = plt.subplots(nrows = 1, ncols = 10, figsize=(18, 12))
+    ax = ax.ravel(order='C')
+    for j in [k]:
+        img = df_withpattern.waferMap[df_withpattern.failureType==labels2[j]]
+        for i in range(10):
+            ax[i].imshow(img[img.index[i]])
+            ax[i].set_title(df_withpattern.failureType[img.index[i]][0][0], fontsize=10)
+            ax[i].set_xlabel(df_withpattern.index[img.index[i]], fontsize=10)
+            ax[i].set_xticks([])
+            ax[i].set_yticks([])
+    plt.tight_layout()
+    plt.show()
+
+x = [9,340, 3, 16, 0, 25, 84, 37]
+labels2 = ['Center','Donut','Edge-Loc','Edge-Ring','Loc','Random','Scratch','Near-full']
+
+#ind_def = {'Center': 9, 'Donut': 340, 'Edge-Loc': 3, 'Edge-Ring': 16, 'Loc': 0, 'Random': 25,  'Scratch': 84, 'Near-full': 37}
+fig, ax = plt.subplots(nrows = 2, ncols = 4, figsize=(20, 10))
+ax = ax.ravel(order='C')
+for i in range(8):
+    img = df_withpattern.waferMap[x[i]]
+    ax[i].imshow(img)
+    ax[i].set_title(df_withpattern.failureType[x[i]][0][0],fontsize=24)
+    ax[i].set_xticks([])
+    ax[i].set_yticks([])
+plt.tight_layout()
+plt.show()
 
 
-# # illustration of 13 regions
-# an = np.linspace(0, 2*np.pi, 100)
-# plt.plot(2.5*np.cos(an), 2.5*np.sin(an))
-# plt.axis('equal')
-# plt.axis([-4, 4, -4, 4])        # x축의 제한을 -4에서 4로, y축의 제한을 -4에서 4로 설정
-# plt.plot([-2.5, 2.5], [1.5, 1.5])
-# plt.plot([-2.5, 2.5], [0.5, 0.5 ])
-# plt.plot([-2.5, 2.5], [-0.5, -0.5 ])
-# plt.plot([-2.5, 2.5], [-1.5,-1.5 ])
-#
-# plt.plot([0.5, 0.5], [-2.5, 2.5])
-# plt.plot([1.5, 1.5], [-2.5, 2.5])
-# plt.plot([-0.5, -0.5], [-2.5, 2.5])
-# plt.plot([-1.5, -1.5], [-2.5, 2.5])
-# plt.title(" Devide wafer map to 13 regions")
-# plt.xticks([])
-# plt.yticks([])
-# plt.show()
+# illustration of 13 regions
+an = np.linspace(0, 2*np.pi, 100)
+plt.plot(2.5*np.cos(an), 2.5*np.sin(an))
+plt.axis('equal')
+plt.axis([-4, 4, -4, 4])        # x축의 제한을 -4에서 4로, y축의 제한을 -4에서 4로 설정
+plt.plot([-2.5, 2.5], [1.5, 1.5])
+plt.plot([-2.5, 2.5], [0.5, 0.5 ])
+plt.plot([-2.5, 2.5], [-0.5, -0.5 ])
+plt.plot([-2.5, 2.5], [-1.5,-1.5 ])
+
+plt.plot([0.5, 0.5], [-2.5, 2.5])
+plt.plot([1.5, 1.5], [-2.5, 2.5])
+plt.plot([-0.5, -0.5], [-2.5, 2.5])
+plt.plot([-1.5, -1.5], [-2.5, 2.5])
+plt.title(" Devide wafer map to 13 regions")
+plt.xticks([])
+plt.yticks([])
+plt.show()
 ########################## 이미지 보정 불량 반도체 이미지만 뽑아서 볼 수 있게 하는 과정 ##########################
 def cal_den(x):
     return 100 * (np.sum(x == 2) / np.size(x))
@@ -188,21 +188,21 @@ def find_regions(x):
     return fea_reg_den
 df_withpattern['fea_reg'] = df_withpattern.waferMap.apply(find_regions)     # 1개의 웨이퍼의 위치별 불량 밀도
 
-# x = [9, 340, 3, 16, 0, 25, 84, 37]      # 위에서 확인한 불량 종류 별 index
-# labels2 = ['Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch', 'Near-full']
-#
-# fig, ax = plt.subplots(nrows=2, ncols=4, figsize=(20, 10))  # subplots: 여러 그래프 그려줌
-# ax = ax.ravel(order='C')
-# for i in range(8):
-#     ax[i].bar(np.linspace(1, 13, 13), df_withpattern.fea_reg[x[i]])
-#     ax[i].set_title(df_withpattern.failureType[x[i]][0][0], fontsize=15)
-#     ax[i].set_xticks([])        # 눈금 없음
-#     ax[i].set_yticks([])
-#
-# plt.tight_layout()
-# plt.show()
+x = [9, 340, 3, 16, 0, 25, 84, 37]      # 위에서 확인한 불량 종류 별 index
+labels2 = ['Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch', 'Near-full']
 
-## randon transform(라돈 변환,사이노그램(Sinogram)): 이걸 왜 하는건지?????
+fig, ax = plt.subplots(nrows=2, ncols=4, figsize=(20, 10))  # subplots: 여러 그래프 그려줌
+ax = ax.ravel(order='C')
+for i in range(8):
+    ax[i].bar(np.linspace(1, 13, 13), df_withpattern.fea_reg[x[i]])
+    ax[i].set_title(df_withpattern.failureType[x[i]][0][0], fontsize=15)
+    ax[i].set_xticks([])        # 눈금 없음
+    ax[i].set_yticks([])
+
+plt.tight_layout()
+plt.show()
+
+# randon transform(라돈 변환,사이노그램(Sinogram)): 이걸 왜 하는건지?????
 def change_val(img):            # 1이하의 값을 0으로 치환. 왜??????????
     img[img==1] =0
     return img
@@ -210,21 +210,21 @@ df_withpattern_copy = df_withpattern.copy()
 df = df_withpattern_copy
 df_withpattern_copy['new_waferMap'] = df_withpattern_copy.waferMap.apply(change_val) # apply: waferMap의 값을 ()으로 변경
 
-# x = [9, 340, 3, 16, 0, 25, 84, 37]
-# labels2 = ['Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch', 'Near-full']
-#
-# fig, ax = plt.subplots(nrows=2, ncols=4, figsize=(10, 5))
-# ax = ax.ravel(order='C')
-# for i in range(8):
-#     img = df_withpattern_copy.waferMap[x[i]]
-#     theta = np.linspace(0., 180., max(img.shape), endpoint=False)   # 구간 시작점, 구간 끝점, 구간 내 숫자 개수
-#     sinogram = radon(img, theta=theta)
-#
-#     ax[i].imshow(sinogram, cmap=plt.cm.Greys_r, extent=(0, 180, 0, sinogram.shape[0]), aspect='auto')
-#     ax[i].set_title(df_withpattern_copy.failureType[x[i]][0][0], fontsize=15)
-#     ax[i].set_xticks([])
-# plt.tight_layout()
-# plt.show()
+x = [9, 340, 3, 16, 0, 25, 84, 37]
+labels2 = ['Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch', 'Near-full']
+
+fig, ax = plt.subplots(nrows=2, ncols=4, figsize=(10, 5))
+ax = ax.ravel(order='C')
+for i in range(8):
+    img = df_withpattern_copy.waferMap[x[i]]
+    theta = np.linspace(0., 180., max(img.shape), endpoint=False)   # 구간 시작점, 구간 끝점, 구간 내 숫자 개수
+    sinogram = radon(img, theta=theta)
+
+    ax[i].imshow(sinogram, cmap=plt.cm.Greys_r, extent=(0, 180, 0, sinogram.shape[0]), aspect='auto')
+    ax[i].set_title(df_withpattern_copy.failureType[x[i]][0][0], fontsize=15)
+    ax[i].set_xticks([])
+plt.tight_layout()
+plt.show()
 ## cubic interpolation(삼차보간법): 각 차원에 대해 20으로 고정
 def cubic_inter_mean(img):  # 삼차보간법 평균값
     theta = np.linspace(0., 180., max(img.shape), endpoint=False)
