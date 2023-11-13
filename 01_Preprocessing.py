@@ -65,12 +65,13 @@ df = df.replace({'failureNum': mapping_type, 'trainTestNum': mapping_traintest})
 # 결함 분류가 된 데이터
 df_withlabel = df[(df['failureNum'] >= 0) & (df['failureNum'] <= 8)]
 df_withlabel = df_withlabel.reset_index()
-# 결함 분류가 안 된 데이터
+# 결함이 명확한 데이터
 df_withpattern = df[(df['failureNum'] >= 0) & (df['failureNum'] <= 7)]
 df_withpattern = df_withpattern.reset_index()
 # 결함이 불명확한 데이터
 df_nonpattern = df[(df['failureNum'] == 8)]
-print(df_withlabel.shape[0], df_withpattern.shape[0], df_nonpattern.shape[0])
+# withlabel = with pattern + nonpattern
+# print(df_withlabel.shape[0], df_withpattern.shape[0], df_nonpattern.shape[0])
 # 전체 데이터 수
 tol_wafers = df.shape[0]
 
