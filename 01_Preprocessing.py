@@ -96,7 +96,7 @@ ax2.bar(uni_pattern[0], uni_pattern[1] / df_withpattern.shape[0], color='gold', 
 ax2.set_title("failure type frequency")
 ax2.set_ylabel("% of pattern wafers")
 ax2.set_xticklabels(labels2)
-plt.show()
+# plt.show()
 
 fig, ax = plt.subplots(nrows=10, ncols=10, figsize=(20, 20))
 # ravel() : 다차원 배열 -> 1차원 으로 변경 (flatten() 과 달리 원본 변형, 필요할 경우만 사본 생성)
@@ -113,7 +113,7 @@ for i in range(100):
     ax[i].set_xticks([])
     ax[i].set_yticks([])
 plt.tight_layout()
-plt.show()
+# plt.show()
 
 x = [0, 1, 2, 3, 4, 5, 6, 7]
 labels2 = ['Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch', 'Near-full']
@@ -131,10 +131,9 @@ for k in x:
             ax[i].set_xticks([])
             ax[i].set_yticks([])
     plt.tight_layout()
-    plt.show()
+    # plt.show()
 
-# ind_def = {'Center': 9, 'Donut': 340, 'Edge-Loc': 3, 'Edge-Ring': 16, 'Loc': 0, 'Random': 25,  'Scratch': 84,
-# 'Near-full': 37}
+# ind_def = {'Center': 9, 'Donut': 340, 'Edge-Loc': 3, 'Edge-Ring': 16, 'Loc': 0, 'Random': 25, 'Scratch': 84, 'Near-full': 37}
 
 x = [9, 340, 3, 16, 0, 25, 84, 37]
 labels2 = ['Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch', 'Near-full']
@@ -149,7 +148,7 @@ for i in range(8):
     ax[i].set_xticks([])
     ax[i].set_yticks([])
 plt.tight_layout()
-plt.show()
+# plt.show()
 
 
 # wafer 구역 나누기
@@ -218,7 +217,7 @@ for i in range(8):
     ax[i].set_yticks([])
 
 plt.tight_layout()
-plt.show()
+# plt.show()
 
 
 def change_val(img):
@@ -244,38 +243,50 @@ for i in range(8):
     ax[i].set_title(df_withpattern_copy.failureType[x[i]][0][0], fontsize=15)
     ax[i].set_xticks([])
 plt.tight_layout()
-plt.show()
 
+# plt.show()
+
+# print('before', df_withpattern_copy.waferMap[x[0]])
 
 # wafermap의 크기가 다르기 때문에 평균, 표준편차를 이용하여 고정된 차원 특징 값을 함 (각 차원은 20으로 고정)
 
 
 def cubic_inter_mean(img):
     theta = np.linspace(0., 180., max(img.shape), endpoint=False)
-    sinogram = radon(img, theta=theta)
-    xMean_Row = np.mean(sinogram, axis=1)
+
+    sinogram = radon(img, theta=theta) * 300
+    # print('sinogram', sinogram)
+    xMean_Row = np.mean(sinogram, axis = 1)
     x = np.linspace(1, xMean_Row.size, xMean_Row.size)
     y = xMean_Row
-    f = interpolate.interp1d(x, y, kind='cubic')
+    f = interpolate.interp1d(x, y, kind = 'cubic')
     xnew = np.linspace(1, xMean_Row.size, 20)
-    ynew = f(xnew) / 100  # use interpolation function returned by `interp1d`
+    ynew = f(xnew)/100   # use interpolation function returned by `interp1d`
     return ynew
-
 
 def cubic_inter_std(img):
     theta = np.linspace(0., 180., max(img.shape), endpoint=False)
-    sinogram = radon(img, theta=theta)
+    sinogram = radon(img, theta=theta) * 300
     xStd_Row = np.std(sinogram, axis=1)
     x = np.linspace(1, xStd_Row.size, xStd_Row.size)
     y = xStd_Row
-    f = interpolate.interp1d(x, y, kind='cubic')
+    f = interpolate.interp1d(x, y, kind = 'cubic')
     xnew = np.linspace(1, xStd_Row.size, 20)
-    ynew = f(xnew) / 100  # use interpolation function returned by `interp1d`
+    ynew = f(xnew)/100   # use interpolation function returned by `interp1d`
     return ynew
+
+# df_withpattern_copy_head = df_withpattern_copy.head()
+# df_withpattern_copy_head['fea_cub_mean'] = df_withpattern_copy_head.waferMap.apply(cubic_inter_mean)
+# df_withpattern_copy_head['fea_cub_std'] = df_withpattern_copy_head.waferMap.apply(cubic_inter_std)
+# print(df_withpattern_copy_head.fea_cub_mean[0])
+# exit()
+
 
 
 df_withpattern_copy['fea_cub_mean'] = df_withpattern_copy.waferMap.apply(cubic_inter_mean)
 df_withpattern_copy['fea_cub_std'] = df_withpattern_copy.waferMap.apply(cubic_inter_std)
+
+df_withpattern_copy.info()
 
 x = [9, 340, 3, 16, 0, 25, 84, 37]
 labels2 = {'Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch', 'Near-full'}
@@ -292,7 +303,7 @@ for i in range(8):
     ax[i].set_ylim([0, 1])
 plt.tight_layout()
 plt.show()
-
+exit()
 fig, ax = plt.subplots(nrows=2, ncols=4, figsize=(20, 10))
 ax = ax.ravel(order='C')
 for i in range(8):
@@ -302,7 +313,7 @@ for i in range(8):
     ax[i].set_xlim([0, 21])
     ax[i].set_ylim([0, 0.3])
 plt.tight_layout()
-
+exit()
 x = [9, 340, 3, 16, 0, 25, 84, 37]
 labels2 = {'Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch', 'Near-full'}
 
@@ -312,7 +323,6 @@ for i in range(8):
     img = df_withpattern_copy.waferMap[x[i]]
     zero_img = np.zeros(img.shape)
     img_labels = measure.label(img, connectivity=1, background=0)       # 전면에 붙어있는 요소 라벨화
-    # img_labels = measure.label(img, neighbors=4, connectivity=1, background=0)
     img_labels = img_labels - 1
     if img_labels.max() == 0:
         no_region = 0
@@ -340,7 +350,7 @@ def fea_geom(img):
     norm_area = img.shape[0] * img.shape[1]
     norm_perimeter = np.sqrt((img.shape[0]) ** 2 + (img.shape[1]) ** 2)
 
-    img_labels = measure.label(img, neighbors=4, connectivity=1, background=0)
+    img_labels = measure.label(img, connectivity=1, background=0)
 
     if img_labels.max() == 0:
         img_labels[img_labels == 0] = 1
