@@ -25,8 +25,6 @@ df = pd.read_pickle("./input/LSWMD.pkl")  # 피클에 있는 데이터 프레임
 # trianTestLabel    훈련, 테스트 라벨
 # failureType       웨이퍼 결함 타입
 
-print(df.waferMap[3])
-exit()
 
 # 웨이퍼 수량 측정 그래프
 # uni_Index = np.unique(df.waferIndex, return_counts=True)
@@ -65,10 +63,10 @@ df = df.replace({'failureNum': mapping_type, 'trainTestNum': mapping_traintest})
 # 결함 분류가 된 데이터
 df_withlabel = df[(df['failureNum'] >= 0) & (df['failureNum'] <= 8)]
 df_withlabel = df_withlabel.reset_index()
-# 결함이 명확한 데이터
+# 결함의 종류가 명확한 데이터
 df_withpattern = df[(df['failureNum'] >= 0) & (df['failureNum'] <= 7)]
 df_withpattern = df_withpattern.reset_index()
-# 결함이 불명확한 데이터
+# 결함의 종류가 불명확한 데이터
 df_nonpattern = df[(df['failureNum'] == 8)]
 # withlabel = with pattern + nonpattern
 # print(df_withlabel.shape[0], df_withpattern.shape[0], df_nonpattern.shape[0])
@@ -80,6 +78,7 @@ gs = gridspec.GridSpec(1, 2, width_ratios=[1, 2.5])
 ax1 = plt.subplot(gs[0])
 ax2 = plt.subplot(gs[1])
 
+# [결함 분류 안됨, 결함 종류 명확, 결함 종류 불분명]
 no_wafers = [tol_wafers - df_withlabel.shape[0], df_withpattern.shape[0], df_nonpattern.shape[0]]
 
 # colors = ['silver', 'orange', 'gold']
@@ -133,6 +132,7 @@ labels2 = ['Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch
 
 # ind_def = {'Center': 9, 'Donut': 340, 'Edge-Loc': 3, 'Edge-Ring': 16, 'Loc': 0, 'Random': 25,  'Scratch': 84,
 # 'Near-full': 37}
+
 x = [9, 340, 3, 16, 0, 25, 84, 37]
 labels2 = ['Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch', 'Near-full']
 
@@ -150,7 +150,6 @@ labels2 = ['Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch
 
 
 # wafer 구역 나누기
-
 # an = np.linspace(0, 2 * np.pi, 100)
 # plt.plot(2.5 * np.cos(an), 2.5 * np.sin(an))
 # plt.axis('equal')           # 축 간격 동일하게
@@ -223,9 +222,7 @@ def change_val(img):
 df_withpattern_copy = df_withpattern.copy()
 df_withpattern_copy['new_waferMap'] = df_withpattern_copy.waferMap.apply(change_val)
 
-x = [9, 340, 3, 16, 0, 25, 84, 37]
-labels2 = ['Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch', 'Near-full']
-
+# sinogram, radon 변환으로 defect의 위치 탐색
 fig, ax = plt.subplots(nrows=2, ncols=4, figsize=(20, 10))
 ax = ax.ravel(order='C')
 for i in range(8):
@@ -239,6 +236,9 @@ for i in range(8):
 plt.tight_layout()
 
 plt.show()
+
+
+# wafermap의 크기가 다르기 때문에 평균, 표준편차를 이용하여 고정된 차원 특징 값을 함 (각 차원은 20으로 고정)
 
 
 def cubic_inter_mean(img):
