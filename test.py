@@ -1,11 +1,13 @@
 from sklearn.preprocessing import StandardScaler
-import matplotlib.pyplot as plt
 from matplotlib import gridspec
+from collections import OrderedDict
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pickle
 import warnings
 import sys
+
 
 warnings.filterwarnings("ignore")  # 경고문 출력 제거
 np.set_printoptions(threshold=sys.maxsize)  # 배열 전체 출력
@@ -37,19 +39,19 @@ df['waferMapDim'] = df.waferMap.apply(find_dim)
 # failureType Data Labeling
 
 df.loc[df['failureType'].str.len() == 0, "failureType"] = np.nan
-df['failureType'] = df['failureType'].fillna("Nan")
+# df['failureType'] = df['failureType'].fillna("Nan")
 
 df['failureNum'] = df.failureType
 df['trainTestNum'] = df.trianTestLabel
 
 mapping_type = {'Center': 1, 'Donut': 2, 'Edge-Loc': 3, 'Edge-Ring': 4, 'Loc': 5, 'Random': 6, 'Scratch': 7,
-                'Near-full': 8, 'none': 0, "Nan": 9}
+                'Near-full': 8, 'none': 0}  # , "Nan": 9
 mapping_traintest = {'Training': 0, 'Test': 1}
 df = df.replace({'failureNum': mapping_type, 'trainTestNum': mapping_traintest})
 
 df = df.drop(['trianTestLabel'], axis=1)
 
-df_withlabel = df[(df['failureNum'] >= 1) & (df['failureNum'] <= 9)]
+df_withlabel = df[(df['failureNum'] >= 0) & (df['failureNum'] <= 8)]
 df_withlabel = df_withlabel.reset_index()
 # 결함의 종류가 명확한 데이터
 df_withpattern = df[(df['failureNum'] >= 1) & (df['failureNum'] <= 8)]
@@ -58,53 +60,90 @@ df_withpattern = df_withpattern.reset_index()
 df_nonpattern = df[(df['failureNum'] == 0)]
 df_nonpattern = df_nonpattern.reset_index()
 # 분류 없음
-df_Nan = df[(df['failureNum'] == 9)]
-df_Nan = df_Nan.reset_index()
+# df_Nan = df[(df['failureNum'] == 9)]
+# df_Nan = df_Nan.reset_index()
 
-from collections import OrderedDict
-
+# x, y < 25 인 wafer 제거
 print(max(df_nonpattern.waferMapDim), min(df_nonpattern.waferMapDim))  # df.waferMapDim 최대 최소값 확인
 sorted_list_X = sorted(df_nonpattern.waferMapDim, key=lambda x: x[0], reverse=False)
 sorted_list_Y = sorted(df_nonpattern.waferMapDim, key=lambda x: x[1], reverse=False)
 
-ordered_set = list(OrderedDict.fromkeys(sorted_list_X))
+ordered_set_X = list(OrderedDict.fromkeys(sorted_list_X))
+ordered_set_Y = list(OrderedDict.fromkeys(sorted_list_Y))
+topX_values = ordered_set_X[:10]
+topY_values = ordered_set_Y[:10]
+print('minX:', topX_values)
+print('minY:', topY_values)
 
-topX_values = ordered_set[:50]
-topY_values = ordered_set[:50]
-print(topX_values)
-print(topY_values)
+# # 가로 세로 비가 50 이하인 wafer 제거
+# filtered_half_X = [t for t in df_nonpattern.waferMapDim if 0.0 <= t[0] / t[1] <= 0.50]
+# filtered_half_Y = [t for t in df_nonpattern.waferMapDim if 0.0 <= t[1] / t[0] <= 0.50]
+# less50_X = list(OrderedDict.fromkeys(filtered_half_X))
+# less50_Y = list(OrderedDict.fromkeys(filtered_half_Y))
+# print('less X/Y 50%:', less50_X)
+# print('less Y/X 50%:', less50_Y)
 
-index_Num = df_nonpattern.index[(df_nonpattern['waferMapDim'] == (15, 3)) |
-                                (df_nonpattern['waferMapDim'] == (18, 4)) |
-                                (df_nonpattern['waferMapDim'] == (18, 44)) |
-                                (df_nonpattern['waferMapDim'] == (24, 13)) |
-                                (df_nonpattern['waferMapDim'] == (22, 50)) |
-                                (df_nonpattern['waferMapDim'] == (27, 15)) |
-                                (df_nonpattern['waferMapDim'] == (24, 18))]
+index_Num_np = df_nonpattern.index[(df_nonpattern['waferMapDim'] == (15, 3)) | (df_nonpattern['waferMapDim'] == (18, 4)) |
+                                (df_nonpattern['waferMapDim'] == (18, 44)) | (df_nonpattern['waferMapDim'] == (24, 13)) |
+                                (df_nonpattern['waferMapDim'] == (27, 15)) | (df_nonpattern['waferMapDim'] == (24, 18))]
+index_Num_df = df.index[(df['waferMapDim'] == (15, 3)) | (df['waferMapDim'] == (18, 4)) |
+                        (df['waferMapDim'] == (18, 44)) | (df['waferMapDim'] == (24, 13)) |
+                        (df['waferMapDim'] == (27, 15)) | (df['waferMapDim'] == (24, 18))]
+#                                 (df_nonpattern['waferMapDim'] == (22, 50)) |
 
-index_list = index_Num.tolist()
-df.test = df_nonpattern['failureType'].iloc[index_list]
-print(df.test)
-print(len(df.test))
+index_list_np = index_Num_np.tolist()
+index_list_df = index_Num_df.tolist()
+print(len(index_list_np), len(index_list_df))
+df_nonpattern = df_nonpattern[~df_nonpattern.index.isin(index_list_np)]
+df = df[~df.index.isin(index_list_df)]
+df_nonpattern = df_nonpattern.reset_index()
+
+# sorted_list_X = sorted(df_nonpattern.waferMapDim, key=lambda x: x[0], reverse=False)
+# sorted_list_Y = sorted(df_nonpattern.waferMapDim, key=lambda x: x[1], reverse=False)
+#
+# ordered_set_X = list(OrderedDict.fromkeys(sorted_list_X))
+# ordered_set_Y = list(OrderedDict.fromkeys(sorted_list_Y))
+# topX_values = ordered_set_X[:10]
+# topY_values = ordered_set_Y[:10]
+# print(topX_values)
+# print(topY_values)
+
+# for j in range(len(index_list)//100):
+#     fig, ax = plt.subplots(nrows=10, ncols=10, figsize=(20, 20))
+#     ax = ax.ravel(order='C')
+#     for i in range(0, 100):
+#         img = df_nonpattern.waferMap[index_list[i+100*j]]
+#         ax[i].imshow(img)
+#         print(df_nonpattern.waferMapDim[index_list[i+100*j]])
+#         ax[i].set_title(df_nonpattern.failureType[index_list[i+100*j]][0][0], fontsize=10)
+#         ax[i].set_xlabel(df_nonpattern.index[index_list[i+100*j]], fontsize=8)
+#         ax[i].set_xticks([])
+#         ax[i].set_yticks([])
+#     plt.tight_layout()
+#     plt.show()
 
 fig, ax = plt.subplots(nrows=10, ncols=10, figsize=(20, 20))
 ax = ax.ravel(order='C')
-
 for i in range(0, 100):
-    img = df_nonpattern.waferMap[index_Num[i]]
+    img = df_nonpattern.waferMap[i]
     ax[i].imshow(img)
-    ax[i].set_title(df_nonpattern.failureType[index_Num[i]][0][0], fontsize=10)
-    ax[i].set_xlabel(df_nonpattern.index[index_Num[i]], fontsize=8)
+    # print(df_nonpattern.waferMapDim[i])
+    ax[i].set_title(df_nonpattern.failureType[i][0][0], fontsize=10)
+    ax[i].set_xlabel(df_nonpattern.index[i], fontsize=8)
     ax[i].set_xticks([])
     ax[i].set_yticks([])
 plt.tight_layout()
 plt.show()
-# df.info()
-# print(df.head())
 
+df.dropna(inplace=True)
+df.info()
+print(df.head())
 
-# 1. Center': 4294, 2. 'Donut': 555, 3. 'Edge-Loc': 5189, 4. 'Edge-Ring': 9680, 5. 'Loc': 3593,
-# 6. 'Random': 866, 7. 'Scratch': 1193, 8. 'Near-full': 149, 0. 'none': 147431, 9. 'Nan': 638507
+# 0. 'none': 147431, 1. 'Center': 4294, 2. 'Donut': 555, 3. 'Edge-Loc': 5189, 4. 'Edge-Ring': 9680,
+# 5. 'Loc': 3593, 6. 'Random': 866, 7. 'Scratch': 1193, 8. 'Near-full': 149, 9. 'Nan': 638507
+cnt = df['failureType'].value_counts()
+print(cnt)
 
-# with open('./models/wafer_defect.pickle', 'wb') as f:
-#     pickle.dump(df, f)
+with open('./datasets/LSWMD_CleanData.pickle', 'wb') as f:
+    pickle.dump(df, f)
+print('save success')
