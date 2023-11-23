@@ -139,7 +139,7 @@ df.dropna(inplace=True)
 df.info()
 print(df.head())
 
-# 0. 'none': 147431, 1. 'Center': 4294, 2. 'Donut': 555, 3. 'Edge-Loc': 5189, 4. 'Edge-Ring': 9680,
+# 0. 'Normal': 147431, 1. 'Center': 4294, 2. 'Donut': 555, 3. 'Edge-Loc': 5189, 4. 'Edge-Ring': 9680,
 # 5. 'Loc': 3593, 6. 'Random': 866, 7. 'Scratch': 1193, 8. 'Near-full': 149, 9. 'Nan': 638507
 cnt = df['failureType'].value_counts()
 print(cnt)

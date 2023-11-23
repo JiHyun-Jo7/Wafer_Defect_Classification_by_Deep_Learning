@@ -18,24 +18,21 @@ pd.set_option('display.max_columns', None)
 # 0. 'Normal': 147431, 1. Center': 4294, 2. 'Donut': 555, 3. 'Edge-Loc': 5189,
 # 4. 'Edge-Ring': 9680, 5. 'Loc': 3593, 6. 'Random': 866, 7. 'Scratch': 1193, 8. 'Near-full': 149
 
-# 카테고리별 데이터양 맞춰주기
-df_clean = pd.read_pickle("./datasets/LSWMD_clean_data.pickle")
+# 카테고리 별 데이터 양 맞추기
+df_clean = pd.read_pickle("./datasets/LSWMD_CleanData.pickle")
 pd.set_option('display.max_columns', None)
 df_clean.info()
 # df_clean.sort_values('failureNum', inplace=True)
 df_clean.set_index('waferMap', inplace=True)
 df_clean.reset_index(inplace=True)
-print('df_clean')
-# print(df_clean.head())
-test = df_clean.iloc[34839]
-print(test)
-
-exit()
-# index_Num = df_clean.index[df_clean['failureType'] == 'Near-full']
-# print(index_Num)
 
 x = [0, 43, 6492, 35, 97, 19, 541, 130, 814]
 labels2 = ['Normal', 'Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch', 'Near-full']
+
+
+# for i in x:
+#     print(df_clean.failureType[i])
+
 
 # 구역별 밀도 설정
 
@@ -48,8 +45,8 @@ def find_regions(x):
     rows = np.size(x, axis=0)
     cols = np.size(x, axis=1)
 
-    ind1 = np.arange(0, rows, rows//5)
-    ind2 = np.arange(0, cols, cols//5)
+    ind1 = np.arange(0, rows, rows // 5)
+    ind2 = np.arange(0, cols, cols // 5)
 
     reg1 = x[ind1[0]:ind1[1], :]
     reg3 = x[ind1[4]:, :]
@@ -74,12 +71,13 @@ def find_regions(x):
 
 
 df_clean['fea_reg'] = df_clean.waferMap.apply(find_regions)
+df_clean.head()
 
 
 # 보간법으로 waferMap 사이즈 맞추기
 def cubic_inter_mean(img):
     theta = np.linspace(0., 180., max(img.shape), endpoint=False)
-    sinogram = radon(img, theta=theta)
+    sinogram = radon(img, theta=theta) * 300
     xMean_Row = np.mean(sinogram, axis=1)
     x = np.linspace(1, xMean_Row.size, xMean_Row.size)
     y = xMean_Row
@@ -91,7 +89,7 @@ def cubic_inter_mean(img):
 
 def cubic_inter_std(img):
     theta = np.linspace(0., 180., max(img.shape), endpoint=False)
-    sinogram = radon(img, theta=theta)
+    sinogram = radon(img, theta=theta) * 4000
     xStd_Row = np.std(sinogram, axis=1)
     x = np.linspace(1, xStd_Row.size, xStd_Row.size)
     y = xStd_Row
@@ -104,5 +102,26 @@ def cubic_inter_std(img):
 df_clean['fea_cub_mean'] = df_clean.waferMap.apply(cubic_inter_mean)
 df_clean['fea_cub_std'] = df_clean.waferMap.apply(cubic_inter_std)
 
+fig, ax = plt.subplots(nrows=2, ncols=4, figsize=(20, 10))
+ax = ax.ravel(order='C')
+for i in range(8):
+    ax[i].bar(np.linspace(1, 20, 20), df_clean.fea_cub_mean[x[i]])
+    ax[i].set_title(df_clean.failureType[x[i]][0][0], fontsize=10)
+    ax[i].set_xticks([])
+    ax[i].set_xlim([0, 21])
+    ax[i].set_ylim([0, 1])
+plt.tight_layout()
+plt.show()
 
+fig, ax = plt.subplots(nrows=2, ncols=4, figsize=(20, 10))
+ax = ax.ravel(order='C')
+for i in range(8):
+    ax[i].bar(np.linspace(1, 20, 20), df_clean.fea_cub_std[x[i]])
+    ax[i].set_title(df_clean.failureType[x[i]][0][0], fontsize=10)
+    ax[i].set_xticks([])
+    ax[i].set_xlim([0, 21])
+    ax[i].set_ylim([0, 1])
+plt.tight_layout()
+plt.show()
 
+print('end')
