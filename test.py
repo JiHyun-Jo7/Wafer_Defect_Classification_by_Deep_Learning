@@ -33,18 +33,6 @@ def find_dim(x):
 # dataframe 에 wafer size 추가
 df['waferMapDim'] = df.waferMap.apply(find_dim)
 # print(max(df.waferMapDim), min(df.waferMapDim))  # df.waferMapDim 최대 최소값 확인
-# sorted_list_X = sorted(df.waferMapDim, key=lambda x: x[0], reverse=False)
-# sorted_list_Y = sorted(df.waferMapDim, key=lambda x: x[1], reverse=False)
-# topX_values = sorted_list_X[:50]
-# topY_values = sorted_list_Y[:50]
-# print(topX_values)
-# print(topY_values)
-#
-# index_Num = df.index[df['waferMapDim'] == ()]
-# # print(index_Num[:100])
-# idx = []
-# df['test'] = df['failureType'].iloc[idx]
-
 
 # failureType Data Labeling
 
@@ -89,13 +77,15 @@ print(topY_values)
 index_Num = df_nonpattern.index[(df_nonpattern['waferMapDim'] == (15, 3)) |
                                 (df_nonpattern['waferMapDim'] == (18, 4)) |
                                 (df_nonpattern['waferMapDim'] == (18, 44)) |
-                                (df_nonpattern['waferMapDim'] == (22, 50)) |
                                 (df_nonpattern['waferMapDim'] == (24, 13)) |
+                                (df_nonpattern['waferMapDim'] == (22, 50)) |
                                 (df_nonpattern['waferMapDim'] == (27, 15)) |
                                 (df_nonpattern['waferMapDim'] == (24, 18))]
+
 index_list = index_Num.tolist()
 df.test = df_nonpattern['failureType'].iloc[index_list]
 print(df.test)
+print(len(df.test))
 
 fig, ax = plt.subplots(nrows=10, ncols=10, figsize=(20, 20))
 ax = ax.ravel(order='C')
