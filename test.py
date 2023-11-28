@@ -8,7 +8,6 @@ import pickle
 import warnings
 import sys
 
-
 warnings.filterwarnings("ignore")  # 경고문 출력 제거
 np.set_printoptions(threshold=sys.maxsize)  # 배열 전체 출력
 pd.set_option('display.max_columns', None)
@@ -23,6 +22,9 @@ df = pd.read_pickle("./datasets/LSWMD.pkl")  # 피클에 있는 데이터 프레
 
 # 사용하지 않는 데이터 제거
 df = df.drop(['waferIndex', 'dieSize', 'lotName'], axis=1)
+# 'none' -> 'Normal'
+df = df.replace({'failureType': {'none': 'Normal'}})
+
 # df.info()
 
 
@@ -45,7 +47,7 @@ df['failureNum'] = df.failureType
 df['trainTestNum'] = df.trianTestLabel
 
 mapping_type = {'Center': 1, 'Donut': 2, 'Edge-Loc': 3, 'Edge-Ring': 4, 'Loc': 5, 'Random': 6, 'Scratch': 7,
-                'Near-full': 8, 'none': 0}  # , "Nan": 9
+                'Near-full': 8, 'Normal': 0}  # , "Nan": 9
 mapping_traintest = {'Training': 0, 'Test': 1}
 df = df.replace({'failureNum': mapping_type, 'trainTestNum': mapping_traintest})
 
@@ -83,9 +85,10 @@ print('minY:', topY_values)
 # print('less X/Y 50%:', less50_X)
 # print('less Y/X 50%:', less50_Y)
 
-index_Num_np = df_nonpattern.index[(df_nonpattern['waferMapDim'] == (15, 3)) | (df_nonpattern['waferMapDim'] == (18, 4)) |
-                                (df_nonpattern['waferMapDim'] == (18, 44)) | (df_nonpattern['waferMapDim'] == (24, 13)) |
-                                (df_nonpattern['waferMapDim'] == (27, 15)) | (df_nonpattern['waferMapDim'] == (24, 18))]
+index_Num_np = df_nonpattern.index[
+    (df_nonpattern['waferMapDim'] == (15, 3)) | (df_nonpattern['waferMapDim'] == (18, 4)) |
+    (df_nonpattern['waferMapDim'] == (18, 44)) | (df_nonpattern['waferMapDim'] == (24, 13)) |
+    (df_nonpattern['waferMapDim'] == (27, 15)) | (df_nonpattern['waferMapDim'] == (24, 18))]
 index_Num_df = df.index[(df['waferMapDim'] == (15, 3)) | (df['waferMapDim'] == (18, 4)) |
                         (df['waferMapDim'] == (18, 44)) | (df['waferMapDim'] == (24, 13)) |
                         (df['waferMapDim'] == (27, 15)) | (df['waferMapDim'] == (24, 18))]

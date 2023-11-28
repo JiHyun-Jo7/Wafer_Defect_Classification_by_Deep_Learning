@@ -29,11 +29,6 @@ df_clean.reset_index(inplace=True)
 x = [0, 43, 6492, 35, 97, 19, 541, 130, 814]
 labels2 = ['Normal', 'Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch', 'Near-full']
 
-
-# for i in x:
-#     print(df_clean.failureType[i])
-
-
 # 구역별 밀도 설정
 
 
@@ -63,7 +58,6 @@ def find_regions(x):
     reg12 = x[ind1[3]:ind1[4], ind2[2]:ind2[3]]
     reg13 = x[ind1[3]:ind1[4], ind2[3]:ind2[4]]
 
-    fea_reg_den = []
     fea_reg_den = [cal_den(reg1), cal_den(reg2), cal_den(reg3), cal_den(reg4), cal_den(reg5), cal_den(reg6),
                    cal_den(reg7), cal_den(reg8), cal_den(reg9), cal_den(reg10), cal_den(reg11), cal_den(reg12),
                    cal_den(reg13)]
@@ -71,14 +65,14 @@ def find_regions(x):
 
 
 df_clean['fea_reg'] = df_clean.waferMap.apply(find_regions)
-df_clean.head()
+print(df_clean.head())
 
 
 # 보간법으로 waferMap 사이즈 맞추기
 def cubic_inter_mean(img):
-    theta = np.linspace(0., 180., max(img.shape), endpoint=False)
-    sinogram = radon(img, theta=theta) * 300
-    xMean_Row = np.mean(sinogram, axis=1)
+    # theta = np.linspace(0., 180., max(img.shape), endpoint=False)
+    # sinogram = radon(img, theta=theta) * 300
+    xMean_Row = np.mean(img, axis=1)
     x = np.linspace(1, xMean_Row.size, xMean_Row.size)
     y = xMean_Row
     f = interpolate.interp1d(x, y, kind='cubic')
@@ -88,9 +82,9 @@ def cubic_inter_mean(img):
 
 
 def cubic_inter_std(img):
-    theta = np.linspace(0., 180., max(img.shape), endpoint=False)
-    sinogram = radon(img, theta=theta) * 4000
-    xStd_Row = np.std(sinogram, axis=1)
+    # theta = np.linspace(0., 180., max(img.shape), endpoint=False)
+    # sinogram = radon(img, theta=theta) * 3000
+    xStd_Row = np.std(img, axis=1)
     x = np.linspace(1, xStd_Row.size, xStd_Row.size)
     y = xStd_Row
     f = interpolate.interp1d(x, y, kind='cubic')
@@ -102,9 +96,9 @@ def cubic_inter_std(img):
 df_clean['fea_cub_mean'] = df_clean.waferMap.apply(cubic_inter_mean)
 df_clean['fea_cub_std'] = df_clean.waferMap.apply(cubic_inter_std)
 
-fig, ax = plt.subplots(nrows=2, ncols=4, figsize=(20, 10))
+fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(20, 10))
 ax = ax.ravel(order='C')
-for i in range(8):
+for i in range(9):
     ax[i].bar(np.linspace(1, 20, 20), df_clean.fea_cub_mean[x[i]])
     ax[i].set_title(df_clean.failureType[x[i]][0][0], fontsize=10)
     ax[i].set_xticks([])
@@ -113,9 +107,9 @@ for i in range(8):
 plt.tight_layout()
 plt.show()
 
-fig, ax = plt.subplots(nrows=2, ncols=4, figsize=(20, 10))
+fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(20, 10))
 ax = ax.ravel(order='C')
-for i in range(8):
+for i in range(9):
     ax[i].bar(np.linspace(1, 20, 20), df_clean.fea_cub_std[x[i]])
     ax[i].set_title(df_clean.failureType[x[i]][0][0], fontsize=10)
     ax[i].set_xticks([])
