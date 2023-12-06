@@ -25,18 +25,8 @@ df = pd.read_pickle("./datasets/LSWMD.pkl")  # 피클에 있는 데이터 프레
 df = df.drop(['waferIndex', 'dieSize', 'lotName'], axis=1)
 # df.info()
 
-def find_dim(x):
-    dim0 = np.size(x, axis=0)
-    dim1 = np.size(x, axis=1)
-    return dim0, dim1
-
-
-# dataframe 에 wafer size 추가
-df['waferMapDim'] = df.waferMap.apply(find_dim)
-# print(max(df.waferMapDim), min(df.waferMapDim))  # df.waferMapDim 최대 최소값 확인
 
 # failureType Data Labeling
-
 df.loc[df['failureType'].str.len() == 0, "failureType"] = np.nan
 # df['failureType'] = df['failureType'].fillna("Nan")
 
@@ -74,6 +64,17 @@ df_nonpattern = df_nonpattern.reset_index()
 # 분류 없음
 # df_Nan = df[(df['failureNum'] == 9)]
 # df_Nan = df_Nan.reset_index()
+
+
+def find_dim(x):
+    dim0 = np.size(x, axis=0)
+    dim1 = np.size(x, axis=1)
+    return dim0, dim1
+
+
+# dataframe 에 wafer size 추가
+df['waferMapDim'] = df.waferMap.apply(find_dim)
+# print(max(df.waferMapDim), min(df.waferMapDim))  # df.waferMapDim 최대 최소값 확인
 
 # x, y < 25 인 wafer 제거
 print(max(df_nonpattern.waferMapDim), min(df_nonpattern.waferMapDim))  # df.waferMapDim 최대 최소값 확인
