@@ -12,6 +12,7 @@ warnings.filterwarnings("ignore")  # 경고문 출력 제거
 np.set_printoptions(threshold=sys.maxsize)  # 배열 전체 출력
 pd.set_option('display.max_columns', None)
 df = pd.read_pickle("./datasets/LSWMD.pkl")  # 피클에 있는 데이터 프레임 read
+
 # df.info()
 # waferMap          웨이퍼 사진 (0 : 공백 | 1 : 웨이퍼 | 2 : 결함)
 # dieSize           다이싱 사이즈
@@ -22,11 +23,7 @@ df = pd.read_pickle("./datasets/LSWMD.pkl")  # 피클에 있는 데이터 프레
 
 # 사용하지 않는 데이터 제거
 df = df.drop(['waferIndex', 'dieSize', 'lotName'], axis=1)
-# 'none' -> 'Normal'
-df = df.replace({'failureType': {'none': 'Normal'}})
-
 # df.info()
-
 
 def find_dim(x):
     dim0 = np.size(x, axis=0)
@@ -47,12 +44,25 @@ df['failureNum'] = df.failureType
 df['trainTestNum'] = df.trianTestLabel
 
 mapping_type = {'Center': 1, 'Donut': 2, 'Edge-Loc': 3, 'Edge-Ring': 4, 'Loc': 5, 'Random': 6, 'Scratch': 7,
-                'Near-full': 8, 'Normal': 0}  # , "Nan": 9
+                'Near-full': 8, 'none': 0}  # , "Nan": 9
 mapping_traintest = {'Training': 0, 'Test': 1}
 df = df.replace({'failureNum': mapping_type, 'trainTestNum': mapping_traintest})
 
 df = df.drop(['trianTestLabel'], axis=1)
 
+
+# 'none' -> 'Normal'
+def replace_value(defect):
+    # 만약 cell_value가 [['none']]이면 [['Normal']]로 변경
+    return [['Normal']] if defect == [['none']] else defect
+
+
+# 'failureType' 열에 대해 사용자 정의 함수를 적용하여 값 변경
+df['failureType'] = df['failureType'].apply(replace_value)
+
+print(df['failureType'].value_counts())
+
+# 분류된 데이터
 df_withlabel = df[(df['failureNum'] >= 0) & (df['failureNum'] <= 8)]
 df_withlabel = df_withlabel.reset_index()
 # 결함의 종류가 명확한 데이터
@@ -92,7 +102,6 @@ index_Num_np = df_nonpattern.index[
 index_Num_df = df.index[(df['waferMapDim'] == (15, 3)) | (df['waferMapDim'] == (18, 4)) |
                         (df['waferMapDim'] == (18, 44)) | (df['waferMapDim'] == (24, 13)) |
                         (df['waferMapDim'] == (27, 15)) | (df['waferMapDim'] == (24, 18))]
-#                                 (df_nonpattern['waferMapDim'] == (22, 50)) |
 
 index_list_np = index_Num_np.tolist()
 index_list_df = index_Num_df.tolist()
@@ -101,38 +110,15 @@ df_nonpattern = df_nonpattern[~df_nonpattern.index.isin(index_list_np)]
 df = df[~df.index.isin(index_list_df)]
 df_nonpattern = df_nonpattern.reset_index()
 
-# sorted_list_X = sorted(df_nonpattern.waferMapDim, key=lambda x: x[0], reverse=False)
-# sorted_list_Y = sorted(df_nonpattern.waferMapDim, key=lambda x: x[1], reverse=False)
-#
-# ordered_set_X = list(OrderedDict.fromkeys(sorted_list_X))
-# ordered_set_Y = list(OrderedDict.fromkeys(sorted_list_Y))
-# topX_values = ordered_set_X[:10]
-# topY_values = ordered_set_Y[:10]
-# print(topX_values)
-# print(topY_values)
 
-# for j in range(len(index_list)//100):
-#     fig, ax = plt.subplots(nrows=10, ncols=10, figsize=(20, 20))
-#     ax = ax.ravel(order='C')
-#     for i in range(0, 100):
-#         img = df_nonpattern.waferMap[index_list[i+100*j]]
-#         ax[i].imshow(img)
-#         print(df_nonpattern.waferMapDim[index_list[i+100*j]])
-#         ax[i].set_title(df_nonpattern.failureType[index_list[i+100*j]][0][0], fontsize=10)
-#         ax[i].set_xlabel(df_nonpattern.index[index_list[i+100*j]], fontsize=8)
-#         ax[i].set_xticks([])
-#         ax[i].set_yticks([])
-#     plt.tight_layout()
-#     plt.show()
-
-fig, ax = plt.subplots(nrows=10, ncols=10, figsize=(20, 20))
+fig, ax = plt.subplots(nrows=4, ncols=5, figsize=(10, 10))
 ax = ax.ravel(order='C')
-for i in range(0, 100):
-    img = df_nonpattern.waferMap[i]
+for i in range(0, 20):
+    img = df_withpattern.waferMap[i]
     ax[i].imshow(img)
-    # print(df_nonpattern.waferMapDim[i])
-    ax[i].set_title(df_nonpattern.failureType[i][0][0], fontsize=10)
-    ax[i].set_xlabel(df_nonpattern.index[i], fontsize=8)
+    print(df_withpattern.failureType[i])
+    ax[i].set_title(df_withpattern.failureType[i][0][0], fontsize=10)
+    ax[i].set_xlabel(df_withpattern.index[i], fontsize=8)
     ax[i].set_xticks([])
     ax[i].set_yticks([])
 plt.tight_layout()
@@ -142,10 +128,7 @@ df.dropna(inplace=True)
 df.info()
 print(df.head())
 
-# 0. 'Normal': 147431, 1. 'Center': 4294, 2. 'Donut': 555, 3. 'Edge-Loc': 5189, 4. 'Edge-Ring': 9680,
-# 5. 'Loc': 3593, 6. 'Random': 866, 7. 'Scratch': 1193, 8. 'Near-full': 149, 9. 'Nan': 638507
-cnt = df['failureType'].value_counts()
-print(cnt)
+print(df['failureType'].value_counts())
 
 with open('./datasets/LSWMD_CleanData.pickle', 'wb') as f:
     pickle.dump(df, f)
