@@ -24,12 +24,14 @@ df.info()
 df = df.drop(['waferIndex', 'dieSize', 'lotName'], axis=1)
 print("Remove Category")
 df.info()
-print(df['failureType'].value_counts())
+# print(df['failureType'].value_counts())
 # failureType Data Labeling
 df.loc[df['failureType'].str.len() == 0, "failureType"] = np.nan
 # df['failureType'] = df['failureType'].fillna("Nan")
 df.dropna(inplace=True)
 df = df.reset_index()
+
+# 이차원 리스트 제거 및 이름 변경
 
 
 def replace_value(defect):
@@ -40,6 +42,7 @@ def replace_value(defect):
     return defect
 
 
+# 결함 데이터 라벨링
 df['failureType'] = df['failureType'].apply(replace_value)
 print("Change Name")
 print(df['failureType'].value_counts())
@@ -57,19 +60,6 @@ print("Reform Category")
 df.info()
 
 
-# 분류된 데이터
-df_withlabel = df[(df['failureNum'] >= 0) & (df['failureNum'] <= 8)]
-df_withlabel = df_withlabel.reset_index()
-# 결함의 종류가 명확한 데이터
-df_withpattern = df[(df['failureNum'] >= 1) & (df['failureNum'] <= 8)]
-df_withpattern = df_withpattern.reset_index()
-# 결함의 종류가 불명확한 데이터
-df_nonpattern = df[(df['failureNum'] == 0)]
-df_nonpattern = df_nonpattern.reset_index()
-# 분류 없음
-# df_Nan = df[(df['failureNum'] == 9)]
-# df_Nan = df_Nan.reset_index()
-
 def find_dim(x):
     dim0 = np.size(x, axis=0)
     dim1 = np.size(x, axis=1)
@@ -79,11 +69,11 @@ def find_dim(x):
 df['waferMapDim'] = df.waferMap.apply(find_dim)
 # print(max(df.waferMapDim), min(df.waferMapDim))  # df.waferMapDim 최대 최소값 확인
 
-# x, y < 25 인 wafer 제거
+# 가로, 세로 길이가 특정 값 미만인 wafer 제거
 print("Wafer Size")
-print(max(df_nonpattern.waferMapDim), min(df_nonpattern.waferMapDim))  # df.waferMapDim 최대 최소값 확인
-sorted_list_X = sorted(df_nonpattern.waferMapDim, key=lambda x: x[0], reverse=False)
-sorted_list_Y = sorted(df_nonpattern.waferMapDim, key=lambda x: x[1], reverse=False)
+print(max(df.waferMapDim), min(df.waferMapDim))  # df.waferMapDim 최대 최소값 확인
+sorted_list_X = sorted(df.waferMapDim, key=lambda x: x[0], reverse=False)
+sorted_list_Y = sorted(df.waferMapDim, key=lambda x: x[1], reverse=False)
 
 ordered_set_X = list(OrderedDict.fromkeys(sorted_list_X))
 ordered_set_Y = list(OrderedDict.fromkeys(sorted_list_Y))
@@ -100,33 +90,49 @@ print('minY:', topY_values)
 # print('less X/Y 50%:', less50_X)
 # print('less Y/X 50%:', less50_Y)
 
-index_Num_wl = df_withlabel.index[
-    (df_withlabel['waferMapDim'] == (15, 3)) | (df_withlabel['waferMapDim'] == (18, 4)) |
-    (df_withlabel['waferMapDim'] == (18, 44)) | (df_withlabel['waferMapDim'] == (24, 13)) |
-    (df_withlabel['waferMapDim'] == (27, 15)) | (df_withlabel['waferMapDim'] == (24, 18))]
-index_Num_np = df_nonpattern.index[
-    (df_nonpattern['waferMapDim'] == (15, 3)) | (df_nonpattern['waferMapDim'] == (18, 4)) |
-    (df_nonpattern['waferMapDim'] == (18, 44)) | (df_nonpattern['waferMapDim'] == (24, 13)) |
-    (df_nonpattern['waferMapDim'] == (27, 15)) | (df_nonpattern['waferMapDim'] == (24, 18))]
 index_Num_df = df.index[(df['waferMapDim'] == (15, 3)) | (df['waferMapDim'] == (18, 4)) |
                         (df['waferMapDim'] == (18, 44)) | (df['waferMapDim'] == (24, 13)) |
                         (df['waferMapDim'] == (27, 15)) | (df['waferMapDim'] == (24, 18))]
 
-index_list_np = index_Num_np.tolist()
 index_list_df = index_Num_df.tolist()
-print(len(index_list_np), len(index_list_df))
+print(index_list_df)
+print(len(index_list_df))
 
+
+# for j in range(10):
+#     fig, ax = plt.subplots(nrows=10, ncols=10, figsize=(20, 20))
+#     ax = ax.ravel(order='C')
+fig, ax = plt.subplots(nrows=2, ncols=3, figsize=(15, 15))
+ax = ax.ravel(order='C')
+for i in range(6):          # if you use j, range = 100
+    idx = index_list_df[i]  # if you use j,  i = i + 100*j
+    img = df.waferMap[idx]
+    ax[i].imshow(img)
+    # print(df.failureType[idx])
+    ax[i].set_title(df.failureType[idx], fontsize=10)
+    ax[i].set_xlabel(df.index[idx], fontsize=8)
+    ax[i].set_xticks([])
+    ax[i].set_yticks([])
+plt.tight_layout()
+plt.show()
+
+# 문제되는 웨이퍼 제거
 df = df[~df.index.isin(index_list_df)]
-df_withlabel = df_withlabel[~df_withlabel.index.isin(index_list_np)]
-df_nonpattern = df_nonpattern[~df_nonpattern.index.isin(index_list_np)]
-
 df.dropna(inplace=True)
-df_withlabel.dropna(inplace=True)
-df_nonpattern.dropna(inplace=True)
-
 df = df.reset_index()
-df_withlabel = df_withlabel.reset_index()
-df_nonpattern = df_nonpattern.reset_index()
+
+# 데이터 전체
+df_withlabel = df[(df['failureNum'] >= 0) & (df['failureNum'] <= 8)]
+df_withlabel = df_withlabel.drop("level_0", axis=1).reset_index(drop=True)
+# 결함의 종류가 명확한 데이터
+df_withpattern = df[(df['failureNum'] >= 1) & (df['failureNum'] <= 8)]
+df_withpattern = df_withpattern.drop("level_0", axis=1).reset_index(drop=True)
+# 결함의 종류가 불명확한 데이터
+df_nonpattern = df[(df['failureNum'] == 0)]
+df_nonpattern = df_nonpattern.drop("level_0", axis=1).reset_index(drop=True)
+# 분류 없음
+# df_Nan = df[(df['failureNum'] == 9)]
+# df_Nan = df_Nan.reset_index()
 
 fig, ax = plt.subplots(nrows=4, ncols=5, figsize=(10, 10))
 ax = ax.ravel(order='C')
@@ -134,7 +140,7 @@ for i in range(0, 20):
     img = df_withpattern.waferMap[i]
     ax[i].imshow(img)
     print(df_withpattern.failureType[i])
-    ax[i].set_title(df_withpattern.failureType[i][0][0], fontsize=10)
+    ax[i].set_title(df_withpattern.failureType[i], fontsize=10)
     ax[i].set_xlabel(df_withpattern.index[i], fontsize=8)
     ax[i].set_xticks([])
     ax[i].set_yticks([])
