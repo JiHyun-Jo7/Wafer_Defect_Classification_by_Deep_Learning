@@ -90,13 +90,13 @@ print('minY:', topY_values)
 # print('less X/Y 50%:', less50_X)
 # print('less Y/X 50%:', less50_Y)
 
-index_Num_df = df.index[(df['waferMapDim'] == (15, 3)) | (df['waferMapDim'] == (18, 4)) |
+index_Num = df.index[(df['waferMapDim'] == (15, 3)) | (df['waferMapDim'] == (18, 4)) |
                         (df['waferMapDim'] == (18, 44)) | (df['waferMapDim'] == (24, 13)) |
                         (df['waferMapDim'] == (27, 15)) | (df['waferMapDim'] == (24, 18))]
 
-index_list_df = index_Num_df.tolist()
-print(index_list_df)
-print(len(index_list_df))
+index_list = index_Num.tolist()
+print(index_list)
+print(len(index_list))
 
 
 # for j in range(10):
@@ -105,7 +105,7 @@ print(len(index_list_df))
 fig, ax = plt.subplots(nrows=2, ncols=3, figsize=(15, 15))
 ax = ax.ravel(order='C')
 for i in range(6):          # if you use j, range = 100
-    idx = index_list_df[i]  # if you use j,  i = i + 100*j
+    idx = index_list[i]  # if you use j,  i = i + 100*j
     img = df.waferMap[idx]
     ax[i].imshow(img)
     # print(df.failureType[idx])
@@ -117,7 +117,7 @@ plt.tight_layout()
 plt.show()
 
 # 문제되는 웨이퍼 제거
-df = df[~df.index.isin(index_list_df)]
+df = df[~df.index.isin(index_list)]
 df.dropna(inplace=True)
 df = df.reset_index()
 
@@ -134,9 +134,9 @@ df_nonpattern = df_nonpattern.drop("level_0", axis=1).reset_index(drop=True)
 # df_Nan = df[(df['failureNum'] == 9)]
 # df_Nan = df_Nan.reset_index()
 
-fig, ax = plt.subplots(nrows=4, ncols=5, figsize=(10, 10))
+fig, ax = plt.subplots(nrows=5, ncols=5, figsize=(10, 10))
 ax = ax.ravel(order='C')
-for i in range(0, 20):
+for i in range(0, 25):
     img = df_withpattern.waferMap[i]
     ax[i].imshow(img)
     print(df_withpattern.failureType[i])
