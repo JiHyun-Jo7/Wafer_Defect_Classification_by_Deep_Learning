@@ -11,7 +11,10 @@
 ## Preprocessing 
 ### 1. [Check Missing Value & Make New Pickle](01_preprocessing.py)
 
-#### 1. [Load Pickle](https://www.kaggle.com/code/cchou1217/wm-811k-wafermap)
+<details>
+	<summary>Result</summary>
+  	<div markdown="1">
+
 ```
 df = pd.read_pickle("./datasets/LSWMD.pkl")
 df.info()
@@ -24,12 +27,12 @@ dieSize           811457 non-null float64
 lotName           811457 non-null object    # one lot has 25 wafers
 waferIndex        811457 non-null float64   # 1 ~ 25
 trianTestLabel    811457 non-null object
-failureType       811457 non-null object    # 9 Types of defects
+failureType       811457 non-null object    # 9 Types of defects + NaN
 dtypes: float64(2), object(4)  
 memory usage: 37.1+ MB
 ```
-- Load Pickle and check the data Remove unused data that interferes with progress
-- Pickle을 불러오고 데이터를 확인한다 사용하지 않을 데이터는 진행에 방해가 되므로 제거한다
+- [Load Pickle](https://www.kaggle.com/code/cchou1217/wm-811k-wafermap) and check the data Remove unused data that interferes with progress
+- [Pickle](https://www.kaggle.com/code/cchou1217/wm-811k-wafermap)을 불러오고 데이터를 확인한다 사용하지 않을 데이터는 진행에 방해가 되므로 제거한다
 
 ```
 def replace_value(defect):
@@ -40,7 +43,6 @@ def replace_value(defect):
     return defect
 
 df['failureType'] = df['failureType'].apply(replace_value)
-print(df['failureType'].value_counts())
 ```
 - The 'failureType' column in the DataFrame,   
 represented as a two-dimensional list, will be simplified for easier access  
@@ -54,10 +56,9 @@ df['failureNum'] = df.failureType
 df['trainTestNum'] = df.trianTestLabel
 
 mapping_type = {'Normal': 0, 'Center': 1, 'Donut': 2, 'Edge-Loc': 3, 'Edge-Ring': 4, 'Loc': 5, 'Random': 6, 'Scratch': 7,
-                'Near-full': 8}  # , "Nan": 9
+                'Near-full': 8}
 mapping_traintest = {'Training': 0, 'Test': 1}
 df = df.replace({'failureNum': mapping_type, 'trainTestNum': mapping_traintest})
-
 df = df.drop(['trianTestLabel'], axis=1)
 ```
 - Label 'failureType', 'trianTestLabel' and remove 'trianTestLabel'
@@ -84,9 +85,6 @@ ordered_set_Y = list(OrderedDict.fromkeys(sorted_list_Y))
 topX_values = ordered_set_X[:10]
 topY_values = ordered_set_Y[:10]
 
-print('minX:', topX_values)
-print('minY:', topY_values)
-
 index_Num = df.index[(df['waferMapDim'] == (15, 3)) | (df['waferMapDim'] == (18, 4)) |
                         (df['waferMapDim'] == (18, 44)) | (df['waferMapDim'] == (24, 13)) |
                         (df['waferMapDim'] == (27, 15)) | (df['waferMapDim'] == (24, 18))]
@@ -105,7 +103,6 @@ for i in range(6):
     idx = index_list[i]
     img = df.waferMap[idx]
     ax[i].imshow(img)
-    # print(df.failureType[idx])
     ax[i].set_title(df.failureType[idx], fontsize=10)
     ax[i].set_xlabel(df.index[idx], fontsize=8)
     ax[i].set_xticks([])
@@ -126,13 +123,12 @@ Utilize reset_index() to address issues caused by the removed indexes
 제거한 인덱스는 이후 과정에서 문제가 되므로 .reset_index() 과정을 거쳐준다
 
 ```
-# 데이터 전체
 df_withlabel = df[(df['failureNum'] >= 0) & (df['failureNum'] <= 8)]
 df_withlabel = df_withlabel.drop("level_0", axis=1).reset_index(drop=True)
-# 결함의 종류가 명확한 데이터
+
 df_withpattern = df[(df['failureNum'] >= 1) & (df['failureNum'] <= 8)]
 df_withpattern = df_withpattern.drop("level_0", axis=1).reset_index(drop=True)
-# 결함의 종류가 불명확한 데이터
+
 df_nonpattern = df[(df['failureNum'] == 0)]
 df_nonpattern = df_nonpattern.drop("level_0", axis=1).reset_index(drop=True)
 ```
@@ -145,7 +141,7 @@ for i in range(0, 40):
     img = df_withpattern.waferMap[i]
     ax[i].imshow(img)
     print(df_withpattern.failureType[i])
-    ax[i].set_title(df_withpattern.failureType[i][0][0], fontsize=10)
+    ax[i].set_title(df_withpattern.failureType[i], fontsize=10)
     ax[i].set_xlabel(df_withpattern.index[i], fontsize=8)
     ax[i].set_xticks([])
     ax[i].set_yticks([])
@@ -161,6 +157,10 @@ with open('./datasets/LSWMD_CleanData.pickle', 'wb') as f:
 ```
 - Afterwards, save the data frame with irrelevant data removed as a new pickle file for more efficient processing
 - 불필요한 데이터가 제거된 데이터 프레임은 이후 빠른 작업을 위해 새로운 Pickle로 저장한다
+
+   </div>
+</details>
+
 ---
 ### 2. [Data Preprocessing](02_preprocessing.py)
 
