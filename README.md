@@ -28,22 +28,26 @@ failureType       811457 non-null object    # 9 Types of defects
 dtypes: float64(2), object(4)  
 memory usage: 37.1+ MB
 ```
-- eng
-- Pickle을 불러온 후 데이터를 확인한다 사용하지 않을 데이터는 진행에 방해가 되므로 제거한다
+- Load Pickle and check the data Remove unused data that interferes with progress
+- Pickle을 불러오고 데이터를 확인한다 사용하지 않을 데이터는 진행에 방해가 되므로 제거한다
 
 ```
 def replace_value(defect):
-
     if defect == [['none']]:
-        defect = [['Normal']]
-    else: pass
+        defect = 'Normal'
+    else:
+        defect = defect[0][0]
     return defect
 
 df['failureType'] = df['failureType'].apply(replace_value)
+print(df['failureType'].value_counts())
 ```
-- eng
-- 'none' 을 사용하기 위해 이름을 변경한다  
-값이 2차원 행렬로 되어있어 .replace()가 적용되지 않아 함수를 만들어 사용했다
+- The 'failureType' column in the DataFrame,   
+represented as a two-dimensional list, will be simplified for easier access  
+Additionally, the label 'none' will be renamed for greater convenience in future use
+- df['failureType']는 2차원 리스트 데이터들로 구성되어있다    
+이 값들에 쉽게 접급하기 위해 2차원 리스트를 제거한다  
+또한 이후 사용할 'none' 데이터의 이름을 구별하기 쉽도록 변경한다  
 
 ```
 df['failureNum'] = df.failureType
@@ -56,7 +60,7 @@ df = df.replace({'failureNum': mapping_type, 'trainTestNum': mapping_traintest})
 
 df = df.drop(['trianTestLabel'], axis=1)
 ```
-- Eng
+- Label 'failureType', 'trianTestLabel' and remove 'trianTestLabel'
 - 'failureType', 'trianTestLabel' 에 라벨링을 진행한 후 사용하지 않을 'trianTestLabel'는 제거한다
 
 ```
@@ -67,43 +71,77 @@ def find_dim(x):
 
 df['waferMapDim'] = df.waferMap.apply(find_dim)
 ```
-- eng
+- Retrieve the wafer size from the Wafer Map and incorporate it into the data frame (≠ Die Size)
 - Wafer Map을 이용하여 Wafer의 크기를 구하고 데이터 프레임에 추가한다 (≠ Die Size)
 
 ```
-print(max(df_nonpattern.waferMapDim), min(df_nonpattern.waferMapDim))  # df.waferMapDim 최대 최소값 확인
-sorted_list_X = sorted(df_nonpattern.waferMapDim, key=lambda x: x[0], reverse=False)
-sorted_list_Y = sorted(df_nonpattern.waferMapDim, key=lambda x: x[1], reverse=False)
+sorted_list_X = sorted(df.waferMapDim, key=lambda x: x[0], reverse=False)
+sorted_list_Y = sorted(df.waferMapDim, key=lambda x: x[1], reverse=False)
 
 ordered_set_X = list(OrderedDict.fromkeys(sorted_list_X))
 ordered_set_Y = list(OrderedDict.fromkeys(sorted_list_Y))
+
 topX_values = ordered_set_X[:10]
 topY_values = ordered_set_Y[:10]
-```
-- Eng
-- 불량 데이터를 제거하기 위해 Wafer의 크기를 확인한다  
 
-```
-index_Num_df = df.index[(df['waferMapDim'] == (15, 3)) | (df['waferMapDim'] == (18, 4)) |
+print('minX:', topX_values)
+print('minY:', topY_values)
+
+index_Num = df.index[(df['waferMapDim'] == (15, 3)) | (df['waferMapDim'] == (18, 4)) |
                         (df['waferMapDim'] == (18, 44)) | (df['waferMapDim'] == (24, 13)) |
                         (df['waferMapDim'] == (27, 15)) | (df['waferMapDim'] == (24, 18))]
 
-index_list_np = index_Num_np.tolist()
-index_list_df = index_Num_df.tolist()
-print(len(index_list_np), len(index_list_df))
+index_list = index_Num.tolist()
+```
+- Filter out specific sizes to eliminate errors  
+Identify the index corresponding to the wafer size
+- 불량 데이터를 제거하기 위해 특정 크기의 Wafer를 걸러낸다  
+Wafer 크기를 사용하여 인덱스를 특정한다
+```
+fig, ax = plt.subplots(nrows=2, ncols=3, figsize=(15, 15))
+ax = ax.ravel(order='C')
 
-df = df[~df.index.isin(index_list_df)]
+for i in range(6):
+    idx = index_list[i]
+    img = df.waferMap[idx]
+    ax[i].imshow(img)
+    # print(df.failureType[idx])
+    ax[i].set_title(df.failureType[idx], fontsize=10)
+    ax[i].set_xlabel(df.index[idx], fontsize=8)
+    ax[i].set_xticks([])
+    ax[i].set_yticks([])
+plt.tight_layout()
+plt.show()
+```
 
+![error](https://github.com/JiHyun-Jo7/CV2/assets/141097551/20cfc3b1-f463-446b-bb9d-09bd9c912b81)
+
+```
+df = df[~df.index.isin(index_list)]
 df = df.reset_index()
 ```
-- Eng
-- 불량 Wafer의 크기를 사용하여 Index를 구한 뒤, .isin()로 해당 Wafer를 DateFrame에서 제거한다  
-제거된 Index는 이후 과정에서 문제가 되므로 .reset_index() 과정을 거쳐준다
+- Remove the wafer from the DataFrame using .isin()  
+Utilize reset_index() to address issues caused by the removed indexes
+- .isin()로 해당 Wafer를 DateFrame에서 제거한다  
+제거한 인덱스는 이후 과정에서 문제가 되므로 .reset_index() 과정을 거쳐준다
 
 ```
-fig, ax = plt.subplots(nrows=4, ncols=5, figsize=(10, 10))
+# 데이터 전체
+df_withlabel = df[(df['failureNum'] >= 0) & (df['failureNum'] <= 8)]
+df_withlabel = df_withlabel.drop("level_0", axis=1).reset_index(drop=True)
+# 결함의 종류가 명확한 데이터
+df_withpattern = df[(df['failureNum'] >= 1) & (df['failureNum'] <= 8)]
+df_withpattern = df_withpattern.drop("level_0", axis=1).reset_index(drop=True)
+# 결함의 종류가 불명확한 데이터
+df_nonpattern = df[(df['failureNum'] == 0)]
+df_nonpattern = df_nonpattern.drop("level_0", axis=1).reset_index(drop=True)
+```
+- Arrange the labels to examine wafer images
+- 웨이퍼 이미지를 살펴보기 위해 라벨을 정렬한다
+```
+fig, ax = plt.subplots(nrows=4, ncols=10, figsize=(10, 10))
 ax = ax.ravel(order='C')
-for i in range(0, 20):
+for i in range(0, 40):
     img = df_withpattern.waferMap[i]
     ax[i].imshow(img)
     print(df_withpattern.failureType[i])
@@ -114,13 +152,15 @@ for i in range(0, 20):
 plt.tight_layout()
 plt.show()
 ```
-- Image
+
+![defect](https://github.com/JiHyun-Jo7/CV2/assets/141097551/f8efd5ad-9b96-49c9-b7d3-368ed93b3b62)
+
 ```
 with open('./datasets/LSWMD_CleanData.pickle', 'wb') as f:
     pickle.dump(df, f)
 ```
-- Eng
-- 불필요한 데이터가 제거된 데이터 프레임은 이후 빠른 작업을 위해 새로운 Pickle 파일로 저장한다
+- Afterwards, save the data frame with irrelevant data removed as a new pickle file for more efficient processing
+- 불필요한 데이터가 제거된 데이터 프레임은 이후 빠른 작업을 위해 새로운 Pickle로 저장한다
 ---
 
 
