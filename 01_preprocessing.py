@@ -47,6 +47,7 @@ df['failureType'] = df['failureType'].apply(replace_value)
 print("Change Name")
 print(df['failureType'].value_counts())
 
+
 df['failureNum'] = df.failureType
 df['trainTestNum'] = df.trianTestLabel
 
@@ -67,11 +68,11 @@ def find_dim(x):
 
 # dataframe 에 wafer size 추가
 df['waferMapDim'] = df.waferMap.apply(find_dim)
-# print(max(df.waferMapDim), min(df.waferMapDim))  # df.waferMapDim 최대 최소값 확인
 
 # 가로, 세로 길이가 특정 값 미만인 wafer 제거
 print("Wafer Size")
 print(max(df.waferMapDim), min(df.waferMapDim))  # df.waferMapDim 최대 최소값 확인
+
 sorted_list_X = sorted(df.waferMapDim, key=lambda x: x[0], reverse=False)
 sorted_list_Y = sorted(df.waferMapDim, key=lambda x: x[1], reverse=False)
 
@@ -104,6 +105,7 @@ print(len(index_list))
 #     ax = ax.ravel(order='C')
 fig, ax = plt.subplots(nrows=2, ncols=3, figsize=(15, 15))
 ax = ax.ravel(order='C')
+
 for i in range(6):          # if you use j, range = 100
     idx = index_list[i]  # if you use j,  i = i + 100*j
     img = df.waferMap[idx]
@@ -134,9 +136,9 @@ df_nonpattern = df_nonpattern.drop("level_0", axis=1).reset_index(drop=True)
 # df_Nan = df[(df['failureNum'] == 9)]
 # df_Nan = df_Nan.reset_index()
 
-fig, ax = plt.subplots(nrows=5, ncols=5, figsize=(10, 10))
+fig, ax = plt.subplots(nrows=4, ncols=10, figsize=(10, 10))
 ax = ax.ravel(order='C')
-for i in range(0, 25):
+for i in range(0, 40):
     img = df_withpattern.waferMap[i]
     ax[i].imshow(img)
     print(df_withpattern.failureType[i])
