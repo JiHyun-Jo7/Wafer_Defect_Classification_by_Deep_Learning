@@ -31,8 +31,8 @@ failureType       811457 non-null object    # 9 Types of defects + NaN
 dtypes: float64(2), object(4)  
 memory usage: 37.1+ MB
 ```
-- [Load Pickle](https://www.kaggle.com/code/cchou1217/wm-811k-wafermap) and check the data Remove unused data that interferes with progress
-- [Pickle](https://www.kaggle.com/code/cchou1217/wm-811k-wafermap)을 불러오고 데이터를 확인한다 사용하지 않을 데이터는 진행에 방해가 되므로 제거한다
+- Load [Pickle](https://www.kaggle.com/code/cchou1217/wm-811k-wafermap/input) and check the data Remove unused data that interferes with progress
+- [Pickle](https://www.kaggle.com/code/cchou1217/wm-811k-wafermap/input)을 불러오고 데이터를 확인한다 사용하지 않을 데이터는 진행에 방해가 되므로 제거한다
 
 ```
 def replace_value(defect):
