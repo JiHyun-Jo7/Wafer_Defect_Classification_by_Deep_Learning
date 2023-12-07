@@ -9,7 +9,7 @@
 - Python 3.8.1
 ---
 ## Preprocessing 
-1. [Check Missing Value & Make New Pickle](01_preprocessing.py)
+### 1. [Check Missing Value & Make New Pickle](01_preprocessing.py)
 
 #### 1. [Load Pickle](https://www.kaggle.com/code/cchou1217/wm-811k-wafermap)
 ```
@@ -162,8 +162,6 @@ with open('./datasets/LSWMD_CleanData.pickle', 'wb') as f:
 - Afterwards, save the data frame with irrelevant data removed as a new pickle file for more efficient processing
 - 불필요한 데이터가 제거된 데이터 프레임은 이후 빠른 작업을 위해 새로운 Pickle로 저장한다
 ---
-
-
-2. [Data Preprocessing](02_preprocessing.py)
+### 2. [Data Preprocessing](02_preprocessing.py)
 
 #### 1. Title
