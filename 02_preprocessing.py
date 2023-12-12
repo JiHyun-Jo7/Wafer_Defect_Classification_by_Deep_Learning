@@ -1,11 +1,7 @@
 import numpy as np
 import pandas as pd
-import pickle
 import matplotlib.pyplot as plt
-import skimage
-from skimage import measure
-from skimage.transform import radon, probabilistic_hough_line
-from scipy.io import mmwrite, mmread
+from skimage.transform import radon
 from scipy import interpolate, stats
 import sys
 import warnings
@@ -15,8 +11,6 @@ np.set_printoptions(threshold=sys.maxsize)  # 배열 전체 출력
 pd.set_option('display.max_columns', None)
 
 df_clean = pd.read_pickle("./datasets/LSWMD_CleanData.pickle")
-df_clean.set_index('waferMap', inplace=True)
-df_clean.reset_index(inplace=True)
 df_clean.info()
 print(df_clean)
 
@@ -26,7 +20,7 @@ labels = ['Normal', 'Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random',
 for label in labels:
     idx = df_clean[df_clean['failureType'] == label].index
     x.append(idx[0])
-print(x)        # x = [0, 43, 6492, 35, 97, 19, 541, 130, 814]
+print(x)  # x = [0, 43, 6492, 35, 97, 19, 541, 130, 814]
 
 
 def cal_den(x):
@@ -64,23 +58,74 @@ def find_regions(x):
 df_clean['fea_reg'] = df_clean.waferMap.apply(find_regions)
 print(df_clean.head())
 
+fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(15, 15))
+ax = ax.ravel(order='C')
+for i in range(9):
+    ax[i].bar(np.linspace(1, 13, 13), df_clean.fea_reg[x[i]])
+    ax[i].set_title(df_clean.failureType[x[i]], fontsize=15)
+    ax[i].set_xticklabels(labels)
+    ax[i].set_xticks([])
+    ax[i].set_yticks([])
+# plt.tight_layout()
+plt.show()
+
+# test
+
+
+def change_val(img):
+    img[img==1] =0
+    return img
+
+
+df_copy = df_clean.copy()
+df_copy['new_waferMap'] =df_copy.waferMap.apply(change_val)
+
+theta = np.linspace(0., 180., max(df_copy.waferMap[20256].shape), endpoint=False)
+sinogram = radon(df_copy.waferMap[20256], theta=theta, preserve_range=True)
+print('sinogram: ', sinogram)
+xMean_Row = np.mean(sinogram, axis=1)
+print('xMean_Row: ', xMean_Row)
+x = np.linspace(1, xMean_Row.size, xMean_Row.size)
+print('x: ', x)
+y = xMean_Row
+f = interpolate.interp1d(x, y, kind='cubic')
+xnew = np.linspace(1, xMean_Row.size, 20)
+print('xnew: ', xnew)
+ynew = f(xnew) /100 # use interpolation function returned by `interp1d`
+print('ynew: ', ynew)
+
+
+fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(15, 15))
+
+ax.bar(np.linspace(1, 20, 20), ynew)
+ax.set_title(df_copy.failureType[20256], fontsize=10)
+ax.set_xticks([])
+ax.set_xlim([0, 21])
+ax.set_ylim([0, 1])
+plt.tight_layout()
+plt.show()
+
+exit()
+
 
 def cubic_inter_mean(img):
-    # theta = np.linspace(0., 180., max(img.shape), endpoint=False)
-    # sinogram = radon(img, theta=theta) * 300
-    xMean_Row = np.mean(img, axis=1)        # xMean_Row = np.mean(sinogram, axis=1)
+    theta = np.linspace(0., 180., max(img.shape), endpoint=False)
+    sinogram = radon(img, theta=theta) * 300
+    xMean_Row = np.mean(sinogram, axis=1)
+    # xMean_Row = np.mean(img, axis=1)
     x = np.linspace(1, xMean_Row.size, xMean_Row.size)
     y = xMean_Row
     f = interpolate.interp1d(x, y, kind='cubic')
     xnew = np.linspace(1, xMean_Row.size, 20)
-    ynew = f(xnew) / 100  # use interpolation function returned by `interp1d`
+    ynew = f(xnew) / 100 # use interpolation function returned by `interp1d`
     return ynew
 
 
 def cubic_inter_std(img):
-    # theta = np.linspace(0., 180., max(img.shape), endpoint=False)
-    # sinogram = radon(img, theta=theta) * 3000
-    xStd_Row = np.std(img, axis=1)      # xStd_Row = np.std(sinogram, axis=1)
+    theta = np.linspace(0., 180., max(img.shape), endpoint=False)
+    sinogram = radon(img, theta=theta) * 1000
+    xStd_Row = np.std(sinogram, axis=1)
+    # xStd_Row = np.std(img, axis=1)
     x = np.linspace(1, xStd_Row.size, xStd_Row.size)
     y = xStd_Row
     f = interpolate.interp1d(x, y, kind='cubic')
@@ -92,7 +137,9 @@ def cubic_inter_std(img):
 df_clean['fea_cub_mean'] = df_clean.waferMap.apply(cubic_inter_mean)
 df_clean['fea_cub_std'] = df_clean.waferMap.apply(cubic_inter_std)
 
-fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(20, 10))
+print(df_clean.fea_cub_mean.head())
+
+fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(15, 15))
 ax = ax.ravel(order='C')
 for i in range(9):
     ax[i].bar(np.linspace(1, 20, 20), df_clean.fea_cub_mean[x[i]])
@@ -103,13 +150,13 @@ for i in range(9):
 plt.tight_layout()
 plt.show()
 
-fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(20, 10))
+fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(15, 15))
 ax = ax.ravel(order='C')
 for i in range(9):
     ax[i].bar(np.linspace(1, 20, 20), df_clean.fea_cub_std[x[i]])
     ax[i].set_title(df_clean.failureType[x[i]], fontsize=10)
     ax[i].set_xticks([])
     ax[i].set_xlim([0, 21])
-    ax[i].set_ylim([0, 1])
+    ax[i].set_ylim([0, 0.3])
 plt.tight_layout()
 plt.show()
