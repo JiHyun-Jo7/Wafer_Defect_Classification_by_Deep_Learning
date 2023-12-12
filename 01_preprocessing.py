@@ -29,7 +29,8 @@ df.info()
 df.loc[df['failureType'].str.len() == 0, "failureType"] = np.nan
 # df['failureType'] = df['failureType'].fillna("Nan")
 df.dropna(inplace=True)
-df = df.reset_index()
+df.reset_index(drop=True, inplace=True)
+
 
 # 이차원 리스트 제거 및 이름 변경
 
@@ -47,11 +48,11 @@ df['failureType'] = df['failureType'].apply(replace_value)
 print("Change Name")
 print(df['failureType'].value_counts())
 
-
 df['failureNum'] = df.failureType
 df['trainTestNum'] = df.trianTestLabel
 
-mapping_type = {'Normal': 0, 'Center': 1, 'Donut': 2, 'Edge-Loc': 3, 'Edge-Ring': 4, 'Loc': 5, 'Random': 6, 'Scratch': 7,
+mapping_type = {'Normal': 0, 'Center': 1, 'Donut': 2, 'Edge-Loc': 3, 'Edge-Ring': 4, 'Loc': 5, 'Random': 6,
+                'Scratch': 7,
                 'Near-full': 8}  # , "Nan": 9
 mapping_traintest = {'Training': 0, 'Test': 1}
 df = df.replace({'failureNum': mapping_type, 'trainTestNum': mapping_traintest})
@@ -65,6 +66,7 @@ def find_dim(x):
     dim0 = np.size(x, axis=0)
     dim1 = np.size(x, axis=1)
     return dim0, dim1
+
 
 # dataframe 에 wafer size 추가
 df['waferMapDim'] = df.waferMap.apply(find_dim)
@@ -92,22 +94,22 @@ print('minY:', topY_values)
 # print('less Y/X 50%:', less50_Y)
 
 index_Num = df.index[(df['waferMapDim'] == (15, 3)) | (df['waferMapDim'] == (18, 4)) |
-                        (df['waferMapDim'] == (18, 44)) | (df['waferMapDim'] == (24, 13)) |
-                        (df['waferMapDim'] == (27, 15)) | (df['waferMapDim'] == (24, 18))]
+                     (df['waferMapDim'] == (18, 44)) | (df['waferMapDim'] == (24, 13)) |
+                     (df['waferMapDim'] == (27, 15)) | (df['waferMapDim'] == (24, 18))]
 
 index_list = index_Num.tolist()
 print(index_list)
 print(len(index_list))
 
-
 # for j in range(10):
 #     fig, ax = plt.subplots(nrows=10, ncols=10, figsize=(20, 20))
 #     ax = ax.ravel(order='C')
+
 fig, ax = plt.subplots(nrows=2, ncols=3, figsize=(15, 15))
 ax = ax.ravel(order='C')
 
 for i in range(6):          # if you use j, range = 100
-    idx = index_list[i]  # if you use j,  i = i + 100*j
+    idx = index_list[i]     # if you use j,  i = i + 100*j
     img = df.waferMap[idx]
     ax[i].imshow(img)
     # print(df.failureType[idx])
@@ -121,20 +123,20 @@ plt.show()
 # 문제되는 웨이퍼 제거
 df = df[~df.index.isin(index_list)]
 df.dropna(inplace=True)
-df = df.reset_index()
+df.reset_index(drop=True, inplace=True)
 
 # 데이터 전체
 df_withlabel = df[(df['failureNum'] >= 0) & (df['failureNum'] <= 8)]
-df_withlabel = df_withlabel.drop("level_0", axis=1).reset_index(drop=True)
+df_withlabel.reset_index(drop=True, inplace=True)
 # 결함의 종류가 명확한 데이터
 df_withpattern = df[(df['failureNum'] >= 1) & (df['failureNum'] <= 8)]
-df_withpattern = df_withpattern.drop("level_0", axis=1).reset_index(drop=True)
+df_withpattern.reset_index(drop=True, inplace=True)
 # 결함의 종류가 불명확한 데이터
 df_nonpattern = df[(df['failureNum'] == 0)]
-df_nonpattern = df_nonpattern.drop("level_0", axis=1).reset_index(drop=True)
+df_nonpattern.reset_index(drop=True, inplace=True)
 # 분류 없음
 # df_Nan = df[(df['failureNum'] == 9)]
-# df_Nan = df_Nan.reset_index()
+# df_Nan.reset_index(drop=True, inplace=True)
 
 fig, ax = plt.subplots(nrows=4, ncols=10, figsize=(10, 10))
 ax = ax.ravel(order='C')
@@ -156,4 +158,5 @@ print(df['failureType'].value_counts())
 
 with open('./datasets/LSWMD_CleanData.pickle', 'wb') as f:
     pickle.dump(df, f)
+
 print('save success')
