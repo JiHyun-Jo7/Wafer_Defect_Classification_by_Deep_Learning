@@ -360,6 +360,7 @@ def fea_geom(img):
 
 df_copy['fea_geom'] =df_copy.waferMap.apply(fea_geom)
 ```
-
+- eng
+- kr
    </div>
 </details>
