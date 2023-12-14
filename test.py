@@ -13,7 +13,7 @@ from skimage import measure
 from scipy import interpolate
 from scipy import stats
 
-###################### 입력 데이터 추합하기 ######################
+###################### 입력 데이터 추합하기(Concat) ######################
 df=pd.read_pickle('./datasets/LSWMD_final_data.pickle')
 # df.reset_index(drop=True, inplace=True)
 # pd.set_option('display.max_columns', None)
@@ -21,5 +21,5 @@ print(df)
 df.info()
 # count = df['failureType'].value_counts()
 # print('\n', count)
-# column_types = type(df['waferMap'][0])
-# print(column_types)
+column_types = type(df['waferMap'][0])
+print(column_types)
