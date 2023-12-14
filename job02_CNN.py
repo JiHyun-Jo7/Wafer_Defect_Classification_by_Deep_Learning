@@ -11,7 +11,7 @@ from sklearn.model_selection import train_test_split
 training_data=pd.read_pickle('./datasets/LSWMD_final_data.pickle')
 training_data.info()
 
-target =
+target = [] #############
 (X_train, Y_train), (X_test, Y_test) = train_test_split(training_data, target, test_size = 0.2)
 print(X_train.shape, Y_train.shape)
 print(X_test.shape, Y_test.shape)
