@@ -2,12 +2,12 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from PIL import Image
-from keras.utils import to_categorical
-from tensorflow.keras.layers import *
-from tensorflow.keras.models import *
-from tensorflow.keras.optimizers import Adam
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
+# from keras.utils import to_categorical
+# from tensorflow.keras.layers import *
+# from tensorflow.keras.models import *
+# from tensorflow.keras.optimizers import Adam
+# from sklearn.model_selection import train_test_split
+# from sklearn.preprocessing import LabelEncoder
 import sys
 import warnings
 
