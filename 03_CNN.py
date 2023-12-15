@@ -35,16 +35,12 @@ print(max(filtered_df.waferMapDim))
 
 
 # 이미지 크기를 통일시키는 함수
-def resize_wafer_map(wafer_map, target_size, resample_method=Image.BILINEAR):
+def resize_wafer_map_np(wafer_map, target_size):
     try:
-        # Numpy 배열을 이미지로 변환
-        image_array = np.array(wafer_map)
-        image = Image.fromarray(image_array.astype('uint8'))  # Numpy 배열을 이미지로 변환
+        # Numpy 배열의 크기를 조절
+        resized_wafer_map = cv2.resize(wafer_map, (target_size[1], target_size[0]))
 
-        # 이미지 리사이징
-        resized_image = image.resize((int(target_size[1]), int(target_size[0])), resample=resample_method)
-
-        return np.array(resized_image)
+        return resized_wafer_map
     except Exception as e:
         print(f"Error in resizing: {e}")
         return None
