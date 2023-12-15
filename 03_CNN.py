@@ -38,7 +38,7 @@ print(max(filtered_df.waferMapDim))
 def resize_wafer_map_np(wafer_map, target_size):
     try:
         # Numpy 배열의 크기를 조절
-        resized_wafer_map = cv2.resize(wafer_map, (target_size[1], target_size[0]))
+        resized_wafer_map = wafer_map[:target_size[0], :target_size[1]]
 
         return resized_wafer_map
     except Exception as e:
