@@ -2,12 +2,12 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from PIL import Image
-# from keras.utils import to_categorical
-# from tensorflow.keras.layers import *
-# from tensorflow.keras.models import *
-# from tensorflow.keras.optimizers import Adam
-# from sklearn.model_selection import train_test_split
-# from sklearn.preprocessing import LabelEncoder
+from keras.utils import to_categorical
+from tensorflow.keras.layers import *
+from tensorflow.keras.models import *
+from tensorflow.keras.optimizers import Adam
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
 import sys
 import warnings
 
@@ -20,6 +20,10 @@ df = pd.read_pickle("./datasets/LSWMD_value_counts.pickle")
 filtered_df = df[df['failureType'] != 'Normal']
 filtered_df.reset_index(drop=True, inplace=True)
 filtered_df.info()
+
+# LabelEncoder를 사용하여 문자열 레이블을 숫자로 인코딩
+label_encoder = LabelEncoder()
+filtered_df['encoded_labels'] = label_encoder.fit_transform(filtered_df['failureType'])
 
 # 'failureNum'을 'failureType'으로 매핑
 label_mapping = dict(zip(filtered_df['failureNum'], filtered_df['failureType']))
@@ -120,11 +124,14 @@ model.add(Dropout(0.2))
 model.add(Dense(9, activation='softmax'))  # 예측 값 (카테고리 수)
 model.summary()
 
-opt = Adam(learning_rate=0.01)
-model.compile(opt, loss='categorical_crossentropy', metrics=['accuracy'])
+model.compile(optimizer=Adam(learning_rate=0.01), loss='categorical_crossentropy', metrics=['accuracy'])
 
 fit_hist = model.fit(x_train, y_train, batch_size=128,
                      epochs=20, validation_split=0.2, verbose=1)
+
+# val_accuracy 값을 특정 변수에 저장
+val_acc = round(fit_hist.history['val_accuracy'][-1], 3)
+model.save(f'./models/CNN_{val_acc}.h5')
 
 score = model.evaluate(x_test, y_test, verbose=0)
 print('Final test set accuracy', score[1])
@@ -135,8 +142,8 @@ plt.show()
 
 my_sample = np.random.randint(10000)
 plt.imshow(X_test[my_sample], cmap='gray')
+print(labels[Y_test.iloc[my_sample]])
 
-print(labels[Y_test[my_sample]])
 pred = model.predict(x_test[my_sample].reshape(-1, x_dim, y_dim, 1))
 
 print("pred: ", pred)  # 0~9까지 각 숫자일 확률 출력
