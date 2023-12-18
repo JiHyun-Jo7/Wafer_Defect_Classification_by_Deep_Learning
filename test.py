@@ -32,7 +32,14 @@ max_wafer_size = max(df['waferMapDim'])
 print('max:')
 print(max(df.waferMapDim))
 
+# waferMapDim 평균 구하기(튜플)
+# waferMap resize
+# CNN Model 생성
 
+
+# 결과 출력
+print("x 값들과 y 값들의 평균:")
+print(df['Means'])
 
 exit()
 
