@@ -8,7 +8,10 @@ from tensorflow.keras.models import *
 from tensorflow.keras.optimizers import Adam
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
+<<<<<<< HEAD
 from statistics import median
+=======
+>>>>>>> origin/main
 import time
 import sys
 import warnings
@@ -17,19 +20,29 @@ warnings.filterwarnings("ignore")  # 경고문 출력 제거
 np.set_printoptions(threshold=sys.maxsize)  # 배열 전체 출력
 pd.set_option('display.max_columns', None)
 
+<<<<<<< HEAD
 df=pd.read_pickle("./datasets/LSWMD_withpt.pkl")
 df.info()
 # print(df.failureType.value_counts())
+=======
+df=pd.read_pickle("./datasets/LSWMD_withpt.pkl")  # 피클에 있는 데이터 프레임 read
+df.info()
+print(df.failureType.value_counts())
+>>>>>>> origin/main
 
 # LabelEncoder를 사용하여 문자열 레이블을 숫자로 인코딩
 label_encoder = LabelEncoder()
 df['encoded_labels'] = label_encoder.fit_transform(df['failureType'])
+<<<<<<< HEAD
 print(df[['failureType', 'encoded_labels']].head())
 
+=======
+>>>>>>> origin/main
 
 # 'failureNum'을 'failureType'으로 매핑
 label_mapping = dict(zip(df['failureNum'], df['failureType']))
 
+<<<<<<< HEAD
 # 각 행의 x 좌표와 y 좌표를 추출하여 새로운 열을 만듭니다.
 df['x'] = df['waferMapDim'].apply(lambda x: x[0])
 df['y'] = df['waferMapDim'].apply(lambda x: x[1])
@@ -51,12 +64,34 @@ df.info()
 def resize_wafer_map(wafer_map, target_size, resample_method=Image.BILINEAR):
     try:
         global cnt  # 함수 외부의 cnt 변수를 사용하겠다고 선언
+=======
+# 훈련, 테스트 데이터 분리 전 웨이퍼 최대 크기 구하기
+max_wafer_size = max(df['waferMapDim'])
+print('max:')
+print(max(df.waferMapDim))
+
+# waferMapDim 평균 구하기(튜플)
+# waferMap resize
+# CNN Model 생성
+
+
+# 결과 출력
+print("x 값들과 y 값들의 평균:")
+print(df['Means'])
+
+exit()
+
+# 이미지 크기를 통일시키는 함수
+def resize_wafer_map(wafer_map, target_size, resample_method=Image.BILINEAR):
+    try:
+>>>>>>> origin/main
         # Numpy 배열을 이미지로 변환
         image_array = np.array(wafer_map)
         image = Image.fromarray(image_array.astype('uint8'))  # Numpy 배열을 이미지로 변환
 
         # 이미지 리사이징
         resized_image = image.resize((int(target_size[1]), int(target_size[0])), resample=resample_method)
+<<<<<<< HEAD
         # if cnt % 100 == 0:
         #     print('.', end='')
         # if cnt % 1000 == 0:
@@ -64,11 +99,15 @@ def resize_wafer_map(wafer_map, target_size, resample_method=Image.BILINEAR):
         # if cnt % 10000 == 0:
         #     print(cnt / 10000)
         # cnt += 1
+=======
+
+>>>>>>> origin/main
         return np.array(resized_image)
     except Exception as e:
         print(f"Error in resizing: {e}")
         return None
 
+<<<<<<< HEAD
 # cnt 초기화
 # cnt = 0
 
@@ -84,12 +123,34 @@ plt.imshow(df.waferMap[0], cmap='gray')
 plt.subplot(1, 2, 2)
 plt.title("Resized WaferMap")
 plt.imshow(df.resized_waferMap[0], cmap='gray')
+=======
+
+# 예시: 최대 크기 기준으로 통일된 크기 설정
+target_size = (max_wafer_size[1], max_wafer_size[0])
+print('\ntarget_size:')
+print(target_size)
+
+# 'resized_waferMap' 열에 리사이즈된 데이터 추가
+df['resized_waferMap'] = df['waferMap'].apply(lambda x: resize_wafer_map(x, target_size))
+
+# resize 한 waferMap 비교
+plt.subplot(1, 2, 1)
+plt.title("Original WaferMap")
+plt.imshow(df.waferMap[0], cmap='Gray')
+
+plt.subplot(1, 2, 2)
+plt.title("Resized WaferMap")
+plt.imshow(df.resized_waferMap[0], cmap='Gray')
+>>>>>>> origin/main
 plt.show()
 
 # 데이터를 훈련 및 테스트 세트로 분할
 X_train, X_test, Y_train, Y_test = train_test_split(np.array(df['resized_waferMap'].tolist()),
                                                     df['failureNum'], test_size=0.2, random_state=42)
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/main
 # 훈련 데이터 및 레이블 확인
 print("\n훈련 데이터 형태:")
 print(X_train.shape, Y_train.shape)
@@ -106,7 +167,10 @@ plt.show()
 # 레이블을 원-핫 인코딩
 y_train = to_categorical(Y_train)
 y_test = to_categorical(Y_test)
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/main
 # 레이블 확인
 original_label = np.argmax(y_train[my_sample])
 print("\n원래 레이블:", original_label)
@@ -128,11 +192,17 @@ print('type: ', type(X_train[my_sample]))
 
 x_train = X_train / 2  # max(x_train) = 2
 x_test = X_test / 2  # max(x_test) = 2
+<<<<<<< HEAD
 
 x_dim, y_dim = target_size
 x_train = x_train.reshape(len(X_train), x_dim, y_dim, 1)
 x_test = x_test.reshape(-1, x_dim, y_dim, 1)
 
+=======
+x_dim, y_dim = target_size
+x_train = x_train.reshape(len(X_train), x_dim, y_dim, 1)
+x_test = x_test.reshape(-1, x_dim, y_dim, 1)
+>>>>>>> origin/main
 print('\nx_train.shape:')
 print(x_train.shape)
 print("\nx_test.shape:")
@@ -157,7 +227,11 @@ fit_hist = model.fit(x_train, y_train, batch_size=128,
                      epochs=20, validation_split=0.2, verbose=1)
 
 val_acc = round(fit_hist.history['val_accuracy'][-1], 3)
+<<<<<<< HEAD
 model.save('./models/CNN_{}.h5'.format(val_acc))
+=======
+model.save(f'/kaggle/working/models/CNN_{val_acc}.h5')
+>>>>>>> origin/main
 
 score = model.evaluate(x_test, y_test, verbose=0)
 print('Final test set accuracy', score[1])
