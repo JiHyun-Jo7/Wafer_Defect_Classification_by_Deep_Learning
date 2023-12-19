@@ -26,7 +26,6 @@ label_encoder = LabelEncoder()
 df['encoded_labels'] = label_encoder.fit_transform(df['failureType'])
 print(df[['failureType', 'encoded_labels']].head())
 
-
 # 'failureNum'을 'failureType'으로 매핑
 label_mapping = dict(zip(df['failureNum'], df['failureType']))
 
@@ -47,7 +46,6 @@ df.info()
 
 
 # 이미지 크기를 통일시키는 함수
-# 이미지 크기를 통일시키는 함수
 def resize_wafer_map(wafer_map, target_size, resample_method=Image.BILINEAR):
     try:
         global cnt  # 함수 외부의 cnt 변수를 사용하겠다고 선언
@@ -57,20 +55,11 @@ def resize_wafer_map(wafer_map, target_size, resample_method=Image.BILINEAR):
 
         # 이미지 리사이징
         resized_image = image.resize((int(target_size[1]), int(target_size[0])), resample=resample_method)
-        # if cnt % 100 == 0:
-        #     print('.', end='')
-        # if cnt % 1000 == 0:
-        #     print()
-        # if cnt % 10000 == 0:
-        #     print(cnt / 10000)
-        # cnt += 1
+
         return np.array(resized_image)
     except Exception as e:
         print(f"Error in resizing: {e}")
         return None
-
-# cnt 초기화
-# cnt = 0
 
 
 # 'resized_waferMap' 열에 리사이즈된 데이터 추가
@@ -89,7 +78,6 @@ plt.show()
 # 데이터를 훈련 및 테스트 세트로 분할
 X_train, X_test, Y_train, Y_test = train_test_split(np.array(df['resized_waferMap'].tolist()),
                                                     df['failureNum'], test_size=0.2, random_state=42)
-
 # 훈련 데이터 및 레이블 확인
 print("\n훈련 데이터 형태:")
 print(X_train.shape, Y_train.shape)
