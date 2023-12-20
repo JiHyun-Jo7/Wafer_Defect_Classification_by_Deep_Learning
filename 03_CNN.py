@@ -6,13 +6,10 @@ from keras.utils import to_categorical
 from tensorflow.keras.layers import *
 from tensorflow.keras.models import *
 from tensorflow.keras.optimizers import Adam
+from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
-from statistics import median
-from datetime import datetime
-import pickle
-import sys
-import warnings
+import seaborn as sns
+import random, pickle, sys, warnings
 
 warnings.filterwarnings("ignore")  # 경고문 출력 제거
 np.set_printoptions(threshold=sys.maxsize)  # 배열 전체 출력
@@ -22,6 +19,7 @@ df = pd.read_pickle("./datasets/LSWMD_Normal_count.pickle")
 df.reset_index(drop=True, inplace=True)
 df.info()
 # print(df.failureType.value_counts())
+
 
 # 'failureNum'을 'failureType'으로 매핑
 label_mapping = dict(zip(df['failureNum'], df['failureType']))
@@ -78,17 +76,6 @@ for i in range(2):
 # plt.tight_layout()
 plt.show()
 
-# ax1 = plt.subplot(1, 2, 1)
-# plt.title("Original WaferMap idx.{}".format(resize_sample))
-# ax1.set_aspect('equal')
-# plt.imshow(df.waferMap[resize_sample], cmap='gray')
-#
-# ax2 = plt.subplot(1, 2, 2)
-# ax2.set_title("Resized WaferMap ind.{}".format(resize_sample))
-# plt.imshow(df.resized_waferMap[resize_sample], cmap='gray')
-# ax2.set_aspect('equal')
-# plt.show()
-
 # 데이터를 훈련 및 테스트 세트로 분할
 X_train, X_test, Y_train, Y_test = train_test_split(np.array(df['resized_waferMap'].tolist()),
                                                     df['failureNum'], test_size=0.2, random_state=42)
@@ -129,11 +116,11 @@ plt.show()
 labels = ['Normal', 'Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch', 'Near-full']
 print("\ntag:", labels[original_label])
 
-# print(X_train.iloc[my_sample])  # 픽셀 값. 0~255 밝을수록 값이 커짐
+# print(X_train.iloc[my_sample])
 print('type: ', type(X_train[my_sample]))
 
-x_train = X_train / 2  # max(x_train) = 2
-x_test = X_test / 2  # max(x_test) = 2
+x_train = X_train / 2  # max(X_train) = 2
+x_test = X_test / 2  # max(X_test) = 2
 
 x_dim, y_dim = target_size
 x_dim, y_dim = int(x_dim), int(y_dim)
@@ -161,13 +148,13 @@ model.summary()
 model.compile(optimizer=Adam(learning_rate=0.01), loss='categorical_crossentropy', metrics=['accuracy'])
 
 fit_hist = model.fit(x_train, y_train, batch_size=128,
-                     epochs=70, validation_split=0.2, verbose=1)
+                     epochs=3, validation_split=0.2, verbose=1)
 
 val_acc = round(fit_hist.history['val_accuracy'][-1], 3)
 
 # 훈련/테스트 데이터 피클로 저장
 xy = (X_train, X_test, Y_train, Y_test)
-with open('./datasets/train_test{}.pkl'.format(val_acc), 'wb') as file:
+with open('./datasets/train_test_{}.pkl'.format(val_acc), 'wb') as file:
     pickle.dump(xy, file)
 
 # 모델 피클로 저장
@@ -181,15 +168,74 @@ plt.plot(fit_hist.history['val_accuracy'])
 plt.xticks(range(0, len(fit_hist.history['accuracy']) + 1, 5))
 plt.show()
 
-my_sample = np.random.randint(10000)
-pred = model.predict(x_test[my_sample].reshape(-1, x_dim, y_dim, 1))
-# labels = ['Normal', 'Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch', 'Near-full']
-print("pred: ", pred)  # 0~9까지 각 숫자일 확률 출력
-print("argmax: ", labels[np.argmax(pred)])
+# 각 카테고리별로 랜덤한 이미지 하나씩 선택
+selected_images = []
+for i in range(len(labels)):
+    category_indices = np.where(Y_test == i)[0]
+    selected_index = random.choice(category_indices)
+    selected_images.append(selected_index)
 
-plt.imshow(X_test[my_sample], cmap='gray')
-plt.title(labels[Y_test.iloc[my_sample]])
-plt.xlabel("argmax: {}".format(labels[np.argmax(pred)]))
+fig, axes = plt.subplots(3, 3, figsize=(10, 10))
+
+for i, index in enumerate(selected_images):
+    true_label = labels[Y_test.iloc[index]]
+
+    # 모델 예측
+    pred = model.predict(x_test[index].reshape(1, x_dim, y_dim, 1))
+    predicted_label = labels[np.argmax(pred)]
+
+    # 이미지와 예측 결과 시각화
+    ax = axes[i // 3, i % 3]
+    ax.imshow(X_test[index], cmap='gray')
+    ax.set_title(f'True Label: {true_label}')
+    text_color = 'red' if true_label != predicted_label else 'black'
+    ax.set_xlabel(f'argmax: {predicted_label}', color=text_color)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    print("Index: [{}]".format(index))
+    print(pred)
+
+plt.tight_layout()
 plt.show()
-print(labels[Y_test.iloc[my_sample]])
 
+# 모델 예측
+predictions = model.predict(x_test)
+predicted_labels = np.argmax(predictions, axis=1)
+
+# 실제 레이블 정수화
+true_labels = np.argmax(y_test, axis=1)
+
+# 혼동 행렬 계산
+conf_matrix = confusion_matrix(true_labels, predicted_labels)
+
+# 정확도 계산
+accuracy = accuracy_score(true_labels, predicted_labels)
+
+# 각 클래스에 대한 정확도 계산
+class_accuracy = conf_matrix.diagonal() / conf_matrix.sum(axis=1)
+
+# 히트맵 시각화
+plt.figure(figsize=(16, 6))
+
+# 혼동 행렬 (Without Normalization)
+plt.subplot(1, 2, 1)
+sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', xticklabels=labels, yticklabels=labels)
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.title('Confusion Matrix')
+
+# 정규화된 혼동 행렬
+conf_matrix_normalized = conf_matrix.astype('float') / conf_matrix.sum(axis=1)[:, np.newaxis]
+plt.subplot(1, 2, 2)
+sns.heatmap(conf_matrix_normalized, annot=True, fmt=".2f", cmap="Blues", xticklabels=labels, yticklabels=labels)
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.title('Normalized Confusion Matrix')
+
+plt.suptitle('Model Evaluation')
+plt.show()
+
+# 분류 보고서 출력
+class_report = classification_report(true_labels, predicted_labels)
+print("Classification Report:")
+print(class_report)
