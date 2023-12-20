@@ -22,9 +22,9 @@ df.info()
 # print(df.failureType.value_counts())
 
 # LabelEncoder를 사용하여 문자열 레이블을 숫자로 인코딩
-label_encoder = LabelEncoder()
-df['encoded_labels'] = label_encoder.fit_transform(df['failureType'])
-print(df[['failureType', 'encoded_labels']].head())
+# label_encoder = LabelEncoder()
+# df['encoded_labels'] = label_encoder.fit_transform(df['failureType'])
+# print(df[['failureType', 'encoded_labels']].head())
 
 # 'failureNum'을 'failureType'으로 매핑
 label_mapping = dict(zip(df['failureNum'], df['failureType']))
@@ -37,8 +37,10 @@ df['y'] = df['waferMapDim'].apply(lambda x: x[1])
 median_x = df['x'].median()
 median_y = df['y'].median()
 
-# target_size = (median_x, median_y)
-target_size = (38, 38)
+# 이미지를 정사각형으로 만들기
+if median_x > median_y:
+    target_size = (median_x, median_x)
+else: target_size = (median_y, median_y)
 print("Median :", target_size)
 
 df.drop(['x', 'y'], axis=1, inplace=True)
@@ -48,7 +50,6 @@ df.info()
 # 이미지 크기를 통일시키는 함수
 def resize_wafer_map(wafer_map, target_size, resample_method=Image.BILINEAR):
     try:
-        global cnt  # 함수 외부의 cnt 변수를 사용하겠다고 선언
         # Numpy 배열을 이미지로 변환
         image_array = np.array(wafer_map)
         image = Image.fromarray(image_array.astype('uint8'))  # Numpy 배열을 이미지로 변환
@@ -66,14 +67,17 @@ def resize_wafer_map(wafer_map, target_size, resample_method=Image.BILINEAR):
 df['resized_waferMap'] = df['waferMap'].apply(lambda x: resize_wafer_map(x, target_size))
 print('finish resizing image')
 
-plt.subplot(1, 2, 1)
-plt.title("Original WaferMap")
-plt.imshow(df.waferMap[0], cmap='gray')
-
-plt.subplot(1, 2, 2)
-plt.title("Resized WaferMap")
-plt.imshow(df.resized_waferMap[0], cmap='gray')
+resize_sample = np.random.randint(len(df.waferMap))
+compare_img = [df.waferMap[resize_sample], df.resized_waferMap[resize_sample]]
+title = ['Original WaferMap idx.{}', 'Resized WaferMap idx.{}']
+fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(25, 25))
+for i in range(2):
+    img = compare_img[i]
+    ax[i].imshow(img)
+    ax[i].set_title(title[i].format(resize_sample), fontsize=15)
+    ax[i].set_xlabel(df.failureType[resize_sample], fontsize=12)
 plt.show()
+
 
 # 데이터를 훈련 및 테스트 세트로 분할
 X_train, X_test, Y_train, Y_test = train_test_split(np.array(df['resized_waferMap'].tolist()),
