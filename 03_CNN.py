@@ -9,7 +9,8 @@ from tensorflow.keras.optimizers import Adam
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from statistics import median
-import time
+from datetime import datetime
+import pickle
 import sys
 import warnings
 
@@ -17,14 +18,10 @@ warnings.filterwarnings("ignore")  # 경고문 출력 제거
 np.set_printoptions(threshold=sys.maxsize)  # 배열 전체 출력
 pd.set_option('display.max_columns', None)
 
-df=pd.read_pickle("./datasets/LSWMD_withpt.pkl")
+df = pd.read_pickle("./datasets/LSWMD_Normal_count.pickle")
+df.reset_index(drop=True, inplace=True)
 df.info()
 # print(df.failureType.value_counts())
-
-# LabelEncoder를 사용하여 문자열 레이블을 숫자로 인코딩
-# label_encoder = LabelEncoder()
-# df['encoded_labels'] = label_encoder.fit_transform(df['failureType'])
-# print(df[['failureType', 'encoded_labels']].head())
 
 # 'failureNum'을 'failureType'으로 매핑
 label_mapping = dict(zip(df['failureNum'], df['failureType']))
@@ -69,19 +66,33 @@ print('finish resizing image')
 
 resize_sample = np.random.randint(len(df.waferMap))
 compare_img = [df.waferMap[resize_sample], df.resized_waferMap[resize_sample]]
-title = ['Original WaferMap idx.{}', 'Resized WaferMap idx.{}']
+title = ['Original WaferMap\nIdx: [{}]', 'Resized WaferMap\nIdx: [{}]']
 fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(25, 25))
 for i in range(2):
     img = compare_img[i]
-    ax[i].imshow(img)
+    ax[i].imshow(img, cmap='gray')
     ax[i].set_title(title[i].format(resize_sample), fontsize=15)
     ax[i].set_xlabel(df.failureType[resize_sample], fontsize=12)
+    # ax[i].set_xticks([])
+    # ax[i].set_yticks([])
+# plt.tight_layout()
 plt.show()
 
+# ax1 = plt.subplot(1, 2, 1)
+# plt.title("Original WaferMap idx.{}".format(resize_sample))
+# ax1.set_aspect('equal')
+# plt.imshow(df.waferMap[resize_sample], cmap='gray')
+#
+# ax2 = plt.subplot(1, 2, 2)
+# ax2.set_title("Resized WaferMap ind.{}".format(resize_sample))
+# plt.imshow(df.resized_waferMap[resize_sample], cmap='gray')
+# ax2.set_aspect('equal')
+# plt.show()
 
 # 데이터를 훈련 및 테스트 세트로 분할
 X_train, X_test, Y_train, Y_test = train_test_split(np.array(df['resized_waferMap'].tolist()),
                                                     df['failureNum'], test_size=0.2, random_state=42)
+
 # 훈련 데이터 및 레이블 확인
 print("\n훈련 데이터 형태:")
 print(X_train.shape, Y_train.shape)
@@ -90,14 +101,11 @@ print(X_train.shape, Y_train.shape)
 print("\n테스트 데이터 형태:")
 print(X_test.shape, Y_test.shape)
 
-# 이미지 플로팅 및 레이블 확인
-my_sample = np.random.randint(len(X_train))
-plt.imshow(X_train[my_sample], cmap='gray')  # cmap = 'gray': 흑백 처리
-plt.show()
-
 # 레이블을 원-핫 인코딩
 y_train = to_categorical(Y_train)
 y_test = to_categorical(Y_test)
+
+my_sample = np.random.randint(len(X_train))
 
 # 레이블 확인
 original_label = np.argmax(y_train[my_sample])
@@ -111,6 +119,12 @@ print("\n매핑된 레이블:", mapped_label)
 print("\n원-핫 인코딩된 레이블:")
 print(y_train[my_sample])
 
+# 이미지 플로팅 및 레이블 확인
+plt.imshow(X_train[my_sample], cmap='gray')  # cmap = 'gray': 흑백 처리
+plt.title(mapped_label)
+plt.xlabel("label: [{}]".format(original_label))
+plt.show()
+
 # 'labels' 리스트를 사용하여 레이블 출력
 labels = ['Normal', 'Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch', 'Near-full']
 print("\ntag:", labels[original_label])
@@ -122,6 +136,7 @@ x_train = X_train / 2  # max(x_train) = 2
 x_test = X_test / 2  # max(x_test) = 2
 
 x_dim, y_dim = target_size
+x_dim, y_dim = int(x_dim), int(y_dim)
 x_train = x_train.reshape(len(X_train), x_dim, y_dim, 1)
 x_test = x_test.reshape(-1, x_dim, y_dim, 1)
 
@@ -146,9 +161,16 @@ model.summary()
 model.compile(optimizer=Adam(learning_rate=0.01), loss='categorical_crossentropy', metrics=['accuracy'])
 
 fit_hist = model.fit(x_train, y_train, batch_size=128,
-                     epochs=20, validation_split=0.2, verbose=1)
+                     epochs=70, validation_split=0.2, verbose=1)
 
 val_acc = round(fit_hist.history['val_accuracy'][-1], 3)
+
+# 훈련/테스트 데이터 피클로 저장
+xy = (X_train, X_test, Y_train, Y_test)
+with open('./datasets/train_test{}.pkl'.format(val_acc), 'wb') as file:
+    pickle.dump(xy, file)
+
+# 모델 피클로 저장
 model.save('./models/CNN_{}.h5'.format(val_acc))
 
 score = model.evaluate(x_test, y_test, verbose=0)
@@ -156,14 +178,18 @@ print('Final test set accuracy', score[1])
 
 plt.plot(fit_hist.history['accuracy'])
 plt.plot(fit_hist.history['val_accuracy'])
+plt.xticks(range(0, len(fit_hist.history['accuracy']) + 1, 5))
 plt.show()
 
 my_sample = np.random.randint(10000)
-plt.imshow(X_test[my_sample], cmap='gray')
-print(labels[Y_test.iloc[my_sample]])
-
 pred = model.predict(x_test[my_sample].reshape(-1, x_dim, y_dim, 1))
-
-labels = ['Normal', 'Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch', 'Near-full']
+# labels = ['Normal', 'Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch', 'Near-full']
 print("pred: ", pred)  # 0~9까지 각 숫자일 확률 출력
 print("argmax: ", labels[np.argmax(pred)])
+
+plt.imshow(X_test[my_sample], cmap='gray')
+plt.title(labels[Y_test.iloc[my_sample]])
+plt.xlabel("argmax: {}".format(labels[np.argmax(pred)]))
+plt.show()
+print(labels[Y_test.iloc[my_sample]])
+
