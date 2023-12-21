@@ -21,6 +21,7 @@ class Exam(QWidget, form_window):  # 클래스 생성
         self.setFixedWidth(450)
         self.setFixedHeight(700)
         self.btn_open.clicked.connect(self.btn_open_clicked_slot)
+        self.btn_search.clicked.connect(self.search_data)
         self.cb.activated[str].connect(self.Changed_Str)
         self.le.textChanged[str].connect(self.Changed_Str)
         model_path = './models/CNN_0.927.h5'
@@ -91,7 +92,7 @@ class Exam(QWidget, form_window):  # 클래스 생성
 
                 if lb in labels:
                     print('debug:Change Str 02')
-                    self.choice_ramdom_index(labels)
+                    self.choice_ramdom_index(lb)
                     self.lb_img.setPixmap(self.random_waferMap)
                     self.classification(self.random_waferMap)
                 elif lb == 'category':
@@ -121,9 +122,11 @@ class Exam(QWidget, form_window):  # 클래스 생성
         try:
             print('debug:choice_ramdom_index 01')
             df_train, df_test = np.load('./datasets/train_test_{}.pkl', allow_pickle=True)
-            category = df_test[df_test['failureNum'] == label]
-            random_waferMap = np.random.choice(category['waferMap'])
             print('debug:choice_ramdom_index 02')
+            category = df_test[df_test['failureNum'] == label]
+            print('debug:choice_ramdom_index 03')
+            random_waferMap = np.random.choice(category['waferMap'])
+            print('debug:choice_ramdom_index 04')
 
             return random_waferMap
         except: print('error : choice_ramdom_index')
