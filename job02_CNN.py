@@ -12,79 +12,67 @@ import sys
 import warnings
 
 warnings.filterwarnings("ignore")  # 경고문 출력 제거
-np.set_printoptions(threshold=sys.maxsize)  # 배열 전체 출력
+# np.set_printoptions(threshold=sys.maxsize)  # 배열 전체 출력
 pd.set_option('display.max_columns', None)
 
-df_training=pd.read_pickle('./datasets/LSWMD_Train.pickle')
-df_training.reset_index(inplace=True)
-# df_training.info()
-df_test=pd.read_pickle('./datasets/LSWMD_Test.pickle')
-df_test.reset_index(inplace=True)
+failureType_Label = ['Normal', 'Edge-Ring', 'Edge-Loc', 'Center', 'Loc', 'Scratch', 'Random', 'Donut', 'Near-full']
+
+df_train, df_test = np.load('datasets/train_test_0.949.pkl', allow_pickle=True)
+# print(df_train)
+# print(df_test)
+df_train.info()
 # df_test.info()
 
-# print(df_training['fea_cub_mean'], df_training['failureNum'])
-print(type(df_training['fea_cub_mean']), type(df_training['failureNum']))     # Series, Series
-# print(df_training['fea_cub_mean'].shape, df_training['failureNum'].shape)   # (68692,) (68692,)
-X_train = df_training.fea_cub_mean.values#.reshape(-1,20)   # numpy.array(numpy.array)<-변형 필요
-print(X_train)
-print(type(X_train))
-print(X_train.shape)
-exit()
+# x_train, x_test
+X_train = df_train.fea_cub_mean     ## 수정
+Y_train = df_train.failureNum
 
-X_train, Y_train = np.array(df_training['fea_cub_mean'], df_training.failureNum.values.reshape(-1,1))
-print(X_train.shape, Y_train.shape)
-X_test, Y_test = df_test['fea_cub_mean'], df_test['failureNum']
-print(X_test.shape, Y_test.shape)
-print(Y_train, Y_test)
+list_train = []
+for i in X_train:
+    x = list(i.reshape(-1, 1))
+    list_train.append(x)
+x_train = np.array(list_train)
 
-exit()
+X_test = df_test.fea_cub_mean       ## 수정
+Y_test = df_test.failureNum
+list_test = []
+for i in X_test:
+    x = list(i.reshape(-1, 1))
+    list_test.append(x)
+x_test = np.array(list_test)
+
+# y_train, y_test
 # one-hot 인코딩 & softmax
 # 레이블을 원-핫 인코딩
 y_train = to_categorical(Y_train)
 y_test = to_categorical(Y_test)
-# print(y_train, Y_test)
-x_train = X_train
-x_test = X_test
+print(x_test.shape, x_train.shape)
+print(y_test.shape, y_train.shape)
 
+input_shape = x_train[0].shape
+print(input_shape)
+# exit()
 model = Sequential()
-model.add(Dense(256, input_dim=20, activation='relu'))  # len(X_train[0]) = 20
+model.add(Conv1D(32,input_shape=input_shape, kernel_size=5, padding='same', activation='relu'))
+model.add(MaxPooling1D(pool_size=1))
+model.add(LSTM(128, activation='tanh',return_sequences=True))   # return_sequences 결과값을 하나하나 저장해서 시퀀셜한 출력값을 보내주는거
+model.add(Dropout(0.3))
+model.add(LSTM(64, activation='tanh', return_sequences = True))
+model.add(Dropout(0.3))
+model.add(LSTM(64, activation='tanh'))  # 다음 레이어로 Flatten으로 들아고 Dense로 해버리니까 return_sequences 필요X
+model.add(Dropout(0.3))
+model.add(Flatten())
 model.add(Dense(128, activation='relu'))
-model.add(Dense(512, activation='relu'))
-model.add(Dense(9, activation='softmax'))               # len(y_train) = 9
-model.summary()
+model.add(Dense(9, activation='softmax'))
+# model.summary()
 
-model.compile(optimizer=Adam(learning_rate=0.01), loss='categorical_crossentropy', metrics=['accuracy'])
-
-fit_hist = model.fit(X_train, Y_train, batch_size=5, epochs=50, verbose=1)
-score = model.evaluate(X_test, Y_test, verbose=0)
-print('Final test set accuracy :', score[1])
-print(score)
-
-plt.plot(fit_hist.history['accuracy'])
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+fit_hist = model.fit(x_train, y_train, batch_size=128, epochs=10, validation_data=(x_test, y_test))
+model.save('./models/news_category_classification_model_{}.h5'.format(fit_hist.history['val_accuracy'][-1]))
+plt.plot(fit_hist.history['val_accuracy'], label='validation accuracy')
+plt.plot(fit_hist.history['accuracy'], label='accuracy')
+plt.legend()
 plt.show()
-
-
-
-# val_acc = round(fit_hist.history['val_accuracy'][-1], 3)
-# model.save('./models/CNN_{}.h5'.format(val_acc))
-#
-# score = model.evaluate(x_test, y_test, verbose=0)
-# print('Final test set accuracy', score[1])
-#
-# plt.plot(fit_hist.history['accuracy'])
-# plt.plot(fit_hist.history['val_accuracy'])
-# plt.show()
-#
-# my_sample = np.random.randint(10000)
-# plt.imshow(X_test[my_sample], cmap='gray')
-# print(labels[Y_test.iloc[my_sample]])
-#
-# pred = model.predict(x_test[my_sample].reshape(-1, x_dim, y_dim, 1))
-#
-# labels = ['Normal', 'Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch', 'Near-full']
-# print("pred: ", pred)  # 0~9까지 각 숫자일 확률 출력
-# print("argmax: ", labels[np.argmax(pred)])
-
 
 
 
