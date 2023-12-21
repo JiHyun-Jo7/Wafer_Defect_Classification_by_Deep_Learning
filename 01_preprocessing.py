@@ -21,15 +21,15 @@ df.info()
 # failureType       웨이퍼 결함 타입
 
 # 사용하지 않는 데이터 제거
-df = df.drop(['waferIndex', 'dieSize', 'lotName'], axis=1)
-print("Remove Category")
-df.info()
-# print(df['failureType'].value_counts())
-# failureType Data Labeling
-df.loc[df['failureType'].str.len() == 0, "failureType"] = np.nan
-# df['failureType'] = df['failureType'].fillna("Nan")
-df.dropna(inplace=True)
-df.reset_index(drop=True, inplace=True)
+# df = df.drop(['waferIndex', 'dieSize', 'lotName'], axis=1)
+# print("Remove Category")
+# df.info()
+# # print(df['failureType'].value_counts())
+# # failureType Data Labeling
+# df.loc[df['failureType'].str.len() == 0, "failureType"] = np.nan
+# # df['failureType'] = df['failureType'].fillna("Nan")
+# df.dropna(inplace=True)
+# df.reset_index(drop=True, inplace=True)
 
 
 # 이차원 리스트 제거 및 이름 변경

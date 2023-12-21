@@ -299,8 +299,8 @@ import matplotlib.pyplot as plt
 # print('Save!')
 
 
-# ###################### 훈련 데이터와 예측 데이터 나누기 ######################
-# df=pd.read_pickle('datasets/temp/LSWMD_Normal_count.pickle')
+# # ###################### 훈련 데이터와 예측 데이터 나누기 ######################
+# df=pd.read_pickle('./datasets/temp/LSWMD_Normal_count.pickle')
 # pd.set_option('display.max_columns', None)
 # # df.info()
 #
@@ -322,9 +322,11 @@ import matplotlib.pyplot as plt
 #     df_train = pd.concat([df_train, train_data])
 #     df_test = pd.concat([df_test, test_data])
 #
+# # df_train.drop(columns=['index'], inplace=True)
+# # df_test.drop(columns=['index'], inplace=True)
 # df_train.reset_index(inplace=True)
 # df_test.reset_index(inplace=True)
-# print(df_train, df_test)
+# print(df_train, '\n', df_test)
 # # print(len(df_train), len(df_test))
 # # count_train = df_train['failureType'].value_counts()
 # # count_test = df_test['failureType'].value_counts()
@@ -332,7 +334,7 @@ import matplotlib.pyplot as plt
 # # print(count_test)
 # # df_train.info()
 # # df_test.info()
-#
+# exit()
 # with open('./datasets/LSWMD_Train.pickle', 'wb') as f:
 #     pickle.dump(df_train, f)
 # print('Save!')
