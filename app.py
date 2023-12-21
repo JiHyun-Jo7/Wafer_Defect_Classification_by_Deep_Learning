@@ -21,14 +21,23 @@ class Exam(QWidget, form_window):  # 클래스 생성
         self.setFixedWidth(450)
         self.setFixedHeight(700)
         self.btn_open.clicked.connect(self.btn_open_clicked_slot)
-        self.btn_search.clicked.connect(self.search_data)
+        self.btn_search.clicked.connect(self.btn_search_clicked)
         self.cb.activated[str].connect(self.Changed_Str)
-        self.le.textChanged[str].connect(self.Changed_Str)
+        # self.le.textChanged[str].connect(self.Changed_Str)
         model_path = './models/CNN_0.927.h5'
         self.model = load_model(model_path)
         self.path = ('./Img_sample/gui.png', '')
         pixmap = QPixmap(self.path[0])
         self.lb_img.setPixmap(pixmap)
+
+    def btn_search_clicked(self, lb):
+        try:
+            try:
+                print('debug:Change Str 01')
+                lb = int(lb)
+                self.Changed_Num(lb)
+            except: self.Changed_Str(lb)
+        except: print('error : btn_search_clicked')
 
     def btn_open_clicked_slot(self):  # 버튼을 누르는 동안 반응하는 함수    (눌렀다 떼면 반응 -> released)
         old_path = self.path
@@ -47,7 +56,6 @@ class Exam(QWidget, form_window):  # 클래스 생성
 
         except:
             print('error : {}'.format(self.path[0]))
-
 
     def Changed_Num(self, num):
         try:
@@ -79,28 +87,21 @@ class Exam(QWidget, form_window):  # 클래스 생성
         # else:
         #     self.lb_img.setText("Wrong Index")
 
-
     def Changed_Str(self, lb):
         try:
-            try:
-                print('debug:Change Str 01')
-                lb = int(lb)
-                self.Changed_Num(lb)
+            labels = ['Normal', 'Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch', 'Near-full']
 
-            except:
-                labels = ['Normal', 'Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch', 'Near-full']
-
-                if lb in labels:
-                    print('debug:Change Str 02')
-                    self.choice_ramdom_index(lb)
-                    self.lb_img.setPixmap(self.random_waferMap)
-                    self.classification(self.random_waferMap)
-                elif lb == 'category':
-                    print('debug:Change Str 03')
-                    pass
-                else:
-                    print('debug:Change Str 04')
-                    self.lb_img.setText("Wrong Category")
+            if lb in labels:
+                print('debug:Change Str 02')
+                self.choice_ramdom_index(lb)
+                self.lb_img.setPixmap(self.random_waferMap)
+                self.classification(self.random_waferMap)
+            elif lb == 'category':
+                print('debug:Change Str 03')
+                pass
+            else:
+                print('debug:Change Str 04')
+                self.lb_img.setText("Wrong Category")
         except: print('error : Change Str')
 
     def classification(self, img):
@@ -130,7 +131,6 @@ class Exam(QWidget, form_window):  # 클래스 생성
 
             return random_waferMap
         except: print('error : choice_ramdom_index')
-
 
     def preprocessing(self, img):
         try:
