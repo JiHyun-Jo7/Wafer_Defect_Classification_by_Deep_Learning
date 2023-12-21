@@ -17,7 +17,7 @@ pd.set_option('display.max_columns', None)
 
 failureType_Label = ['Normal', 'Edge-Ring', 'Edge-Loc', 'Center', 'Loc', 'Scratch', 'Random', 'Donut', 'Near-full']
 
-df_train, df_test = np.load('datasets/train_test_0.949.pkl', allow_pickle=True)
+df_train, df_test = np.load('./datasets/train_test_0.949.pkl', allow_pickle=True)
 # print(df_train)
 # print(df_test)
 df_train.info()
@@ -53,26 +53,30 @@ input_shape = x_train[0].shape
 print(input_shape)
 # exit()
 model = Sequential()
-model.add(Conv1D(32,input_shape=input_shape, kernel_size=5, padding='same', activation='relu'))
+model.add(Conv1D(32,input_shape=input_shape, kernel_size=3, padding='same', activation='relu'))
 model.add(MaxPooling1D(pool_size=1))
-model.add(LSTM(128, activation='tanh',return_sequences=True))   # return_sequences 결과값을 하나하나 저장해서 시퀀셜한 출력값을 보내주는거
-model.add(Dropout(0.3))
-model.add(LSTM(64, activation='tanh', return_sequences = True))
-model.add(Dropout(0.3))
-model.add(LSTM(64, activation='tanh'))  # 다음 레이어로 Flatten으로 들아고 Dense로 해버리니까 return_sequences 필요X
-model.add(Dropout(0.3))
+model.add(Conv1D(32, kernel_size=3, padding='same', activation='relu'))
+model.add(MaxPooling1D(pool_size=1))
+model.add(Conv1D(16, kernel_size=3, padding='same', activation='relu'))
+model.add(MaxPooling1D(pool_size=1))
+model.add(Conv1D(1, kernel_size=3, padding='same', activation='relu'))
+model.add(MaxPooling1D(pool_size=1))
 model.add(Flatten())
 model.add(Dense(128, activation='relu'))
+model.add(Dense(256, activation='relu'))
+model.add(Dense(128, activation='relu'))
 model.add(Dense(9, activation='softmax'))
-# model.summary()
+model.summary()
 
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-fit_hist = model.fit(x_train, y_train, batch_size=128, epochs=10, validation_data=(x_test, y_test))
-model.save('./models/news_category_classification_model_{}.h5'.format(fit_hist.history['val_accuracy'][-1]))
+fit_hist = model.fit(x_train, y_train, batch_size=4096, epochs=10, validation_data=(x_test, y_test))
+
+model.save('./models/Wafer_fea_cub_mean_model_{}.h5'.format(fit_hist.history['val_accuracy'][-1]))
+
 plt.plot(fit_hist.history['val_accuracy'], label='validation accuracy')
 plt.plot(fit_hist.history['accuracy'], label='accuracy')
 plt.legend()
 plt.show()
 
-
+## 나머지 입력값 쓸모없다고 판단.
 
