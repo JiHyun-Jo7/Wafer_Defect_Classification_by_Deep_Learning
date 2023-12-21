@@ -42,14 +42,7 @@ class Exam(QWidget, form_window):  # 클래스 생성
 
         try:
             img = Image.open(self.path[0])
-            img = img.convert('RGB')
-            img = img.resize((37, 37))
-            data = np.asarray(img)
-            data = data / 255
-            print(data)
-            data = data.reshape(-1, 37, 37, 1)
-
-            self.classification(data)
+            self.classification(self.preprocessing(img))
 
         except:
             print('error : {}'.format(self.path[0]))
@@ -114,6 +107,15 @@ class Exam(QWidget, form_window):  # 클래스 생성
         random_waferMap = np.random.choice(category['waferMap'])
 
         return random_waferMap
+
+    def preprocessing(self, img):
+        img = img.convert('RGB')
+        data = np.asarray(img)
+        data = data / 255
+        data = data.resize((37, 37))
+        print(data)
+        data = data.reshape(-1, 37, 37, 1)
+        return data
 
 
 if __name__ == '__main__':  # 메인
