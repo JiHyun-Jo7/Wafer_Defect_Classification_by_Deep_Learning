@@ -1,52 +1,51 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from PIL import Image
 from keras.utils import to_categorical
 from tensorflow.keras.layers import *
 from tensorflow.keras.models import *
 from tensorflow.keras.optimizers import Adam
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
-from statistics import median
 import time
 import sys
 import warnings
 
 warnings.filterwarnings("ignore")  # 경고문 출력 제거
-# np.set_printoptions(threshold=sys.maxsize)  # 배열 전체 출력
+np.set_printoptions(threshold=sys.maxsize)  # 배열 전체 출력
 pd.set_option('display.max_columns', None)
 
 df_training=pd.read_pickle('./datasets/LSWMD_Train.pickle')
-df_training.drop(columns=['index'], inplace=True)
+df_training.reset_index(inplace=True)
 # df_training.info()
 df_test=pd.read_pickle('./datasets/LSWMD_Test.pickle')
-df_test.drop(columns=['index'], inplace=True)
+df_test.reset_index(inplace=True)
 # df_test.info()
 
-# X_train, numpy.array(numpy.array)형태 -> numpy.array(list)형태로 변환(안 해주면 tensor에서 못 받음)
-X_train = []
-for i in df_training['fea_cub_std']:
-    X_train.append(list(i))
-x_train = np.array(X_train)
+# print(df_training['fea_cub_mean'], df_training['failureNum'])
+print(type(df_training['fea_cub_mean']), type(df_training['failureNum']))     # Series, Series
+# print(df_training['fea_cub_mean'].shape, df_training['failureNum'].shape)   # (68692,) (68692,)
+X_train = df_training.fea_cub_mean.values#.reshape(-1,20)   # numpy.array(numpy.array)<-변형 필요
+print(X_train)
+print(type(X_train))
+print(X_train.shape)
+exit()
 
-X_test = []
-for i in df_test['fea_cub_std']:
-    X_test.append(list(i))
-x_test = np.array(X_test)
+X_train, Y_train = np.array(df_training['fea_cub_mean'], df_training.failureNum.values.reshape(-1,1))
+print(X_train.shape, Y_train.shape)
+X_test, Y_test = df_test['fea_cub_mean'], df_test['failureNum']
+print(X_test.shape, Y_test.shape)
+print(Y_train, Y_test)
 
-# Y_train, one-hot 인코딩 & softmax
+exit()
+# one-hot 인코딩 & softmax
 # 레이블을 원-핫 인코딩
-Y_train = np.array(df_training.failureNum.values.reshape(-1,1))
-Y_test = np.array(df_test.failureNum.values.reshape(-1,1))
 y_train = to_categorical(Y_train)
 y_test = to_categorical(Y_test)
+# print(y_train, Y_test)
+x_train = X_train
+x_test = X_test
 
-# print(y_train, y_test)
-# print(x_train.shape, y_train.shape)
-# print(x_test.shape, y_test.shape)
-
-# modeling
 model = Sequential()
 model.add(Dense(256, input_dim=20, activation='relu'))  # len(X_train[0]) = 20
 model.add(Dense(128, activation='relu'))
@@ -54,15 +53,17 @@ model.add(Dense(512, activation='relu'))
 model.add(Dense(9, activation='softmax'))               # len(y_train) = 9
 model.summary()
 
-opt = Adam(lr=0.001)        # Adam객체 생성. Adam: 경사하강알고리즘 종류 중 하나. 최종본의 느낌. lr=learning_rate. 어차피 알아서 조절한다. 크게 신경 쓸 필요 없다.
-model.compile(opt, loss = 'categorical_crossentropy', metrics=['accuracy'])
+model.compile(optimizer=Adam(learning_rate=0.01), loss='categorical_crossentropy', metrics=['accuracy'])
 
-fit_hist = model.fit(x_train, y_train,batch_size=5,epochs=50,verbose=1)
-score = model.evaluate(x_test, y_test,verbose=0)
-print('정확도:',score[1])
+fit_hist = model.fit(X_train, Y_train, batch_size=5, epochs=50, verbose=1)
+score = model.evaluate(X_test, Y_test, verbose=0)
+print('Final test set accuracy :', score[1])
+print(score)
 
 plt.plot(fit_hist.history['accuracy'])
 plt.show()
+
+
 
 # val_acc = round(fit_hist.history['val_accuracy'][-1], 3)
 # model.save('./models/CNN_{}.h5'.format(val_acc))
