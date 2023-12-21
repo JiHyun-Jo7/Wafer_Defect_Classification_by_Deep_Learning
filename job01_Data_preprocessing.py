@@ -279,4 +279,67 @@ import matplotlib.pyplot as plt
 #     pickle.dump(df, f)
 # print('Save!')
 
-# # 보간법으로 데이터 사이즈 맞추기
+# ###################### Normal 데이터 수량 1만개만 남기기 ######################
+# df=pd.read_pickle('./datasets/LSWMD_final_data.pickle')
+# pd.set_option('display.max_columns', None)
+#
+# df_sorted = df[df['failureType'] == 'Normal']
+# # print(df_sorted)
+# remove_index_Num = df_sorted.iloc[10000].name       ##########
+# # print(remove_index_Num)
+# indices_to_drop = df[(df['failureType'] == 'Normal') & (df.index >= remove_index_Num)].index
+# df.drop(index=indices_to_drop, inplace=True)
+# count = df['failureType'].value_counts()
+# print(count)
+# df.info()
+# print(len(df[df['failureType'] == 'Normal']))
+#
+# with open('./datasets/LSWMD_Normal_count.pickle', 'wb') as f:
+#     pickle.dump(df, f)
+# print('Save!')
+
+
+# # ###################### 훈련 데이터와 예측 데이터 나누기 ######################
+# df=pd.read_pickle('./datasets/temp/LSWMD_Normal_count.pickle')
+# pd.set_option('display.max_columns', None)
+# # df.info()
+#
+# failureType = df['failureType'].unique()
+# # print(failureType)
+# df_train = pd.DataFrame()
+# df_test = pd.DataFrame()
+#
+# for i in range(len(failureType)):
+#     df_temp = df[df['failureType'] == failureType[i]]
+#     divided_point = int(len(df_temp)*0.8)
+#     # print(divided_point)
+#     divided_index = df_temp.iloc[divided_point].name
+#     # print(divided_index)
+#     train_data = df[(df['failureType'] == failureType[i]) & (df.index < divided_index)]
+#     test_data = df[(df['failureType'] == failureType[i]) & (df.index >= divided_index)]
+#     # print(train_data)
+#     # print(len(train_data), len(test_data))
+#     df_train = pd.concat([df_train, train_data])
+#     df_test = pd.concat([df_test, test_data])
+#
+# # df_train.drop(columns=['index'], inplace=True)
+# # df_test.drop(columns=['index'], inplace=True)
+# df_train.reset_index(inplace=True)
+# df_test.reset_index(inplace=True)
+# print(df_train, '\n', df_test)
+# # print(len(df_train), len(df_test))
+# # count_train = df_train['failureType'].value_counts()
+# # count_test = df_test['failureType'].value_counts()
+# # print(count_train)
+# # print(count_test)
+# # df_train.info()
+# # df_test.info()
+# exit()
+# with open('./datasets/LSWMD_Train.pickle', 'wb') as f:
+#     pickle.dump(df_train, f)
+# print('Save!')
+# with open('./datasets/LSWMD_Test.pickle', 'wb') as f:
+#     pickle.dump(df_test, f)
+# print('Save!')
+
+
