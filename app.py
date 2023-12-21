@@ -49,23 +49,26 @@ class Exam(QWidget, form_window):  # 클래스 생성
 
 
     def Changed_Num(self, num):
+        try:
+            print('debug:Change Num 01')
+            df_train, df_test = np.load('./datasets/train_test_{}.pkl', allow_pickle=True)
+            X_test = df_test.waferMap
 
-        df_train, df_test = np.load('./datasets/train_test_{}.pkl', allow_pickle=True)
-        X_test = df_test.waferMap
+            if 0 <= num < len(X_test):
+                print('debug:Change Num 02')
+                img_array = X_test[num]
 
-        if 0 <= num < len(X_test):
-            img_array = X_test[num]
+                height, width = img_array.shape
+                bytes_per_line = width
+                q_image = QImage(img_array.data, width, height, bytes_per_line, QImage.Format_Grayscale8)
 
-            height, width = img_array.shape
-            bytes_per_line = width
-            q_image = QImage(img_array.data, width, height, bytes_per_line, QImage.Format_Grayscale8)
+                pixmap = QPixmap.fromImage(q_image)
 
-            pixmap = QPixmap.fromImage(q_image)
-
-            self.lb_img.setPixmap(pixmap)
-        else:
-            self.lb_img.setText("Wrong Index")
-
+                self.lb_img.setPixmap(pixmap)
+            else:
+                print('debug:Change Num 02')
+                self.lb_img.setText("Wrong Index")
+        except: print('error : Change Num')
         # df_train, df_test = np.load(
         #     './datasets/train_test_{}.pkl', allow_pickle=True)
         # X_test = df_test.waferMap
@@ -78,44 +81,65 @@ class Exam(QWidget, form_window):  # 클래스 생성
 
     def Changed_Str(self, lb):
         try:
-            lb = int(lb)
-            self.Changed_Num(lb)
-        except:
-            labels = ['Normal', 'Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch', 'Near-full']
+            try:
+                print('debug:Change Str 01')
+                lb = int(lb)
+                self.Changed_Num(lb)
 
-            if lb in labels:
-                self.choice_ramdom_index(labels)
-                self.lb_img.setPixmap(self.random_waferMap)
-                self.classification(self.random_waferMap)
+            except:
+                labels = ['Normal', 'Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch', 'Near-full']
 
-            else:
-                self.lb_img.setText("Wrong Category")
+                if lb in labels:
+                    print('debug:Change Str 02')
+                    self.choice_ramdom_index(labels)
+                    self.lb_img.setPixmap(self.random_waferMap)
+                    self.classification(self.random_waferMap)
+                elif lb == 'category':
+                    print('debug:Change Str 03')
+                    pass
+                else:
+                    print('debug:Change Str 04')
+                    self.lb_img.setText("Wrong Category")
+        except: print('error : Change Str')
 
     def classification(self, img):
-        pred = self.model.predict(img)
-        predicted_prob = np.max(pred)
-        pred_str = f'Probability: {predicted_prob * 100:.2f}%'
-        self.lb_pred.setText(pred_str)
+        try:
+            print('debug:classification 01')
+            pred = self.model.predict(img)
+            predicted_prob = np.max(pred)
+            pred_str = f'Probability: {predicted_prob * 100:.2f}%'
+            self.lb_pred.setText(pred_str)
 
-        labels = ['Normal', 'Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch', 'Near-full']
-        predicted_label = labels[np.argmax(pred)]
-        self.lb_label.setText(f'Predicted Label: {predicted_label}')
+            labels = ['Normal', 'Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch', 'Near-full']
+            predicted_label = labels[np.argmax(pred)]
+            print('debug:classification 02')
+            self.lb_label.setText(f'Predicted Label: {predicted_label}')
+        except:
+            print('error : classification')
 
     def choice_ramdom_index(self, label):
-        df_train, df_test = np.load('./datasets/train_test_{}.pkl', allow_pickle=True)
-        category = df_test[df_test['failureNum'] == label]
-        random_waferMap = np.random.choice(category['waferMap'])
+        try:
+            print('debug:choice_ramdom_index 01')
+            df_train, df_test = np.load('./datasets/train_test_{}.pkl', allow_pickle=True)
+            category = df_test[df_test['failureNum'] == label]
+            random_waferMap = np.random.choice(category['waferMap'])
+            print('debug:choice_ramdom_index 02')
 
-        return random_waferMap
+            return random_waferMap
+        except: print('error : choice_ramdom_index')
+
 
     def preprocessing(self, img):
-        img = img.convert('RGB')
-        data = np.asarray(img)
-        data = data / 255
-        data = data.resize((37, 37))
-        print(data)
-        data = data.reshape(-1, 37, 37, 1)
-        return data
+        try:
+            print('debug:preprocessing 01')
+            img = img.convert('RGB')
+            data = np.asarray(img)
+            data = data / 255
+            data = data.resize((37, 37))
+            print(data)
+            data = data.reshape(-1, 37, 37, 1)
+            return data
+        except: print('error : preprocessing')
 
 
 if __name__ == '__main__':  # 메인
