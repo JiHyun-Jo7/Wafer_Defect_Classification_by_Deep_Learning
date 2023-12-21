@@ -18,8 +18,8 @@ pd.set_option('display.max_columns', None)
 df = pd.read_pickle("./datasets/LSWMD_Normal_count.pickle")
 df.reset_index(drop=True, inplace=True)
 df.info()
-# print(df.failureType.value_counts())
 
+print(df.failureType.value_counts())
 
 # 'failureNum'을 'failureType'으로 매핑
 label_mapping = dict(zip(df['failureNum'], df['failureType']))
@@ -77,8 +77,8 @@ for i in range(2):
 plt.show()
 
 # 데이터를 훈련 및 테스트 세트로 분할
-X_train, X_test, Y_train, Y_test = train_test_split(np.array(df['resized_waferMap'].tolist()),
-                                                    df['failureNum'], test_size=0.2, random_state=42)
+X_train, X_test, Y_train, Y_test, reg_train, reg_test, geom_train, geom_test, mean_train, mean_test, std_train, std_test = train_test_split(
+    np.array(df['resized_waferMap'].tolist()), df['failureNum'], df['fea_reg'], df['fea_geom'], df['fea_cub_mean'], df['fea_cub_std'], test_size=0.2, random_state=42)
 
 # 훈련 데이터 및 레이블 확인
 print("\n훈련 데이터 형태:")
@@ -148,14 +148,14 @@ model.summary()
 model.compile(optimizer=Adam(learning_rate=0.01), loss='categorical_crossentropy', metrics=['accuracy'])
 
 fit_hist = model.fit(x_train, y_train, batch_size=128,
-                     epochs=3, validation_split=0.2, verbose=1)
+                     epochs=70, validation_split=0.2, verbose=1)
 
 val_acc = round(fit_hist.history['val_accuracy'][-1], 3)
 
 # 훈련/테스트 데이터 피클로 저장
-xy = (X_train, X_test, Y_train, Y_test)
+fea_all = (X_train, X_test, Y_train, Y_test, reg_train, reg_test, geom_train, geom_test, mean_train, mean_test, std_train, std_test)
 with open('./datasets/train_test_{}.pkl'.format(val_acc), 'wb') as file:
-    pickle.dump(xy, file)
+    pickle.dump(fea_all, file)
 
 # 모델 피클로 저장
 model.save('./models/CNN_{}.h5'.format(val_acc))
@@ -194,6 +194,7 @@ for i, index in enumerate(selected_images):
     ax.set_yticks([])
     print("Index: [{}]".format(index))
     print(pred)
+    print("argmax: ", predicted_label)
 
 plt.tight_layout()
 plt.show()
