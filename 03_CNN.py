@@ -24,7 +24,7 @@ print(df.failureType.value_counts())
 # 'failureNum'을 'failureType'으로 매핑
 label_mapping = dict(zip(df['failureNum'], df['failureType']))
 
-# 각 행의 x 좌표와 y 좌표를 추출하여 새로운 열을 만듭니다.
+# 각 행의 x 좌표와 y 좌표를 추출하여 새로운 열을 생성
 df['x'] = df['waferMapDim'].apply(lambda x: x[0])
 df['y'] = df['waferMapDim'].apply(lambda x: x[1])
 
@@ -49,7 +49,7 @@ def resize_wafer_map(wafer_map, target_size, resample_method=Image.BILINEAR):
         image_array = np.array(wafer_map)
         image = Image.fromarray(image_array.astype('uint8'))  # Numpy 배열을 이미지로 변환
 
-        # 이미지 리사이징
+        # 이미지 크기 변환
         resized_image = image.resize((int(target_size[1]), int(target_size[0])), resample=resample_method)
 
         return np.array(resized_image)
@@ -58,7 +58,7 @@ def resize_wafer_map(wafer_map, target_size, resample_method=Image.BILINEAR):
         return None
 
 
-# 'resized_waferMap' 열에 리사이즈된 데이터 추가
+# 'resized_waferMap' 열에 변환한 데이터 추가
 df['resized_waferMap'] = df['waferMap'].apply(lambda x: resize_wafer_map(x, target_size))
 print('finish resizing image')
 
@@ -76,9 +76,14 @@ for i in range(2):
 # plt.tight_layout()
 plt.show()
 
-# 데이터를 훈련 및 테스트 세트로 분할
-X_train, X_test, Y_train, Y_test, reg_train, reg_test, geom_train, geom_test, mean_train, mean_test, std_train, std_test = train_test_split(
-    np.array(df['resized_waferMap'].tolist()), df['failureNum'], df['fea_reg'], df['fea_geom'], df['fea_cub_mean'], df['fea_cub_std'], test_size=0.2, random_state=42)
+# 훈련 및 테스트 세트로 데이터 분할
+df_train, df_test = train_test_split(df, test_size=0.2, random_state=42)
+
+X_train = np.array(df_train['resized_waferMap'].tolist())
+X_test = np.array(df_test['resized_waferMap'].tolist())
+
+Y_train = df_train['failureNum']
+Y_test = df_test['failureNum']
 
 # 훈련 데이터 및 레이블 확인
 print("\n훈련 데이터 형태:")
@@ -88,7 +93,7 @@ print(X_train.shape, Y_train.shape)
 print("\n테스트 데이터 형태:")
 print(X_test.shape, Y_test.shape)
 
-# 레이블을 원-핫 인코딩
+# 레이블 원-핫 인코딩
 y_train = to_categorical(Y_train)
 y_test = to_categorical(Y_test)
 
@@ -153,7 +158,7 @@ fit_hist = model.fit(x_train, y_train, batch_size=128,
 val_acc = round(fit_hist.history['val_accuracy'][-1], 3)
 
 # 훈련/테스트 데이터 피클로 저장
-fea_all = (X_train, X_test, Y_train, Y_test, reg_train, reg_test, geom_train, geom_test, mean_train, mean_test, std_train, std_test)
+fea_all = df_train, df_test
 with open('./datasets/train_test_{}.pkl'.format(val_acc), 'wb') as file:
     pickle.dump(fea_all, file)
 
