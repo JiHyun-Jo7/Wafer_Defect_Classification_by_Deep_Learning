@@ -8,7 +8,7 @@ from tensorflow.keras.models import *
 from tensorflow.keras.optimizers import Adam
 from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
 from sklearn.model_selection import train_test_split
-import seaborn as sns
+# import seaborn as sns
 import random, pickle, sys, warnings
 
 warnings.filterwarnings("ignore")  # 경고문 출력 제거
@@ -18,6 +18,7 @@ pd.set_option('display.max_columns', None)
 df = pd.read_pickle("./datasets/LSWMD_Normal_count.pickle")
 df.reset_index(drop=True, inplace=True)
 df.info()
+print(df[['failureType', 'failureNum']])
 
 print(df.failureType.value_counts())
 

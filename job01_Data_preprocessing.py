@@ -3,20 +3,27 @@ import pandas as pd
 from scipy.io import mmwrite, mmread
 import pickle
 import matplotlib.pyplot as plt
+import time
+import sys
+import warnings
 
-# df=pd.read_pickle("./datasets/LSWMD.pkl")
+warnings.filterwarnings("ignore")  # 경고문 출력 제거
+# np.set_printoptions(threshold=sys.maxsize)  # 배열 전체 출력
+pd.set_option('display.max_columns', None)
+
+# df=pd.read_pickle("./datasets/temp/LSWMD_origin.pkl")
 # pd.set_option('display.max_columns', None)
 # df.info()
-# # print(df.head(10))
-#
+# print(df.head(10))
+
 # # 필요 없는 컬럼 삭제
 # columns_to_drop = ['dieSize', 'lotName', 'waferIndex', 'trianTestLabel']
 # df = df.drop(columns=columns_to_drop, axis=1)
 # df.info()
-# # print(df.head(10))
+# print(df.head(10))
 # # with open('./datasets/LSWMD_drop_data.pickle', 'wb') as f:
 # #     pickle.dump(df, f)
-#
+
 # #  trianTestLabel&failureType 데이터 타입 변경
 # df=pd.read_pickle('./datasets/LSWMD_drop_data.pickle')
 # pd.set_option('display.max_columns', None)
