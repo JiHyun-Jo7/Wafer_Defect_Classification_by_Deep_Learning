@@ -18,28 +18,35 @@ pd.set_option('display.max_columns', None)
 failureType_Label = ['Normal', 'Edge-Ring', 'Edge-Loc', 'Center', 'Loc', 'Scratch', 'Random', 'Donut', 'Near-full']
 
 df_train, df_test = np.load('./datasets/train_test_0.949.pkl', allow_pickle=True)
+df_train.reset_index(inplace=True)
+df_test.reset_index(inplace=True)
 # print(df_train)
 # print(df_test)
 df_train.info()
 # df_test.info()
 
+# exit()
 # x_train, x_test
 X_train = df_train.fea_cub_mean     ## 수정
+X_test = df_test.fea_cub_mean       ## 수정
 Y_train = df_train.failureNum
+Y_test = df_test.failureNum
 
 list_train = []
 for i in X_train:
+    # a = list(i)
     x = list(i.reshape(-1, 1))
     list_train.append(x)
 x_train = np.array(list_train)
 
-X_test = df_test.fea_cub_mean       ## 수정
-Y_test = df_test.failureNum
 list_test = []
 for i in X_test:
+    # a = list(i)
     x = list(i.reshape(-1, 1))
     list_test.append(x)
 x_test = np.array(list_test)
+
+print(X_train, type(X_train))
 
 # y_train, y_test
 # one-hot 인코딩 & softmax
@@ -69,9 +76,9 @@ model.add(Dense(9, activation='softmax'))
 model.summary()
 
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-fit_hist = model.fit(x_train, y_train, batch_size=4096, epochs=10, validation_data=(x_test, y_test))
+fit_hist = model.fit(x_train, y_train, batch_size=4096, epochs=90, validation_data=(x_test, y_test))
 
-model.save('./models/Wafer_fea_cub_mean_model_{}.h5'.format(fit_hist.history['val_accuracy'][-1]))
+model.save('./models/Wafer_fea_geom_model_{}.h5'.format(fit_hist.history['val_accuracy'][-1]))
 
 plt.plot(fit_hist.history['val_accuracy'], label='validation accuracy')
 plt.plot(fit_hist.history['accuracy'], label='accuracy')
