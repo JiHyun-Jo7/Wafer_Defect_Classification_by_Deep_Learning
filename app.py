@@ -33,7 +33,7 @@ class Exam(QWidget, form_window):  # 클래스 생성
         self.canvas = FigureCanvas(self.fig)
 
         # 모델 불러오기
-        model_path = '../test/models/CNN_0.883.h5'
+        model_path = '../test/models/CNN_0.953.h5'
         self.model = load_model(model_path)
 
         # 초기 화면 설정
