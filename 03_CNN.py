@@ -8,7 +8,7 @@ from tensorflow.keras.models import *
 from tensorflow.keras.optimizers import Adam
 from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
 from sklearn.model_selection import train_test_split
-# import seaborn as sns
+import seaborn as sns
 import random, pickle, sys, warnings
 
 warnings.filterwarnings("ignore")  # 경고문 출력 제거
@@ -63,6 +63,7 @@ def resize_wafer_map(wafer_map, target_size, resample_method=Image.BILINEAR):
 df['resized_waferMap'] = df['waferMap'].apply(lambda x: resize_wafer_map(x, target_size))
 print('finish resizing image')
 
+
 resize_sample = np.random.randint(len(df.waferMap))
 compare_img = [df.waferMap[resize_sample], df.resized_waferMap[resize_sample]]
 title = ['Original WaferMap\nIdx: [{}]', 'Resized WaferMap\nIdx: [{}]']
@@ -72,19 +73,14 @@ for i in range(2):
     ax[i].imshow(img, cmap='gray')
     ax[i].set_title(title[i].format(resize_sample), fontsize=15)
     ax[i].set_xlabel(df.failureType[resize_sample], fontsize=12)
-    # ax[i].set_xticks([])
-    # ax[i].set_yticks([])
-# plt.tight_layout()
 plt.show()
 
 # 훈련 및 테스트 세트로 데이터 분할
-df_train, df_test = train_test_split(df, test_size=0.2, random_state=42)
+X_train, X_test, Y_train, Y_test = train_test_split(df['resized_waferMap'], df['failureNum'], test_size=0.2, random_state=42)
 
-X_train = np.array(df_train['resized_waferMap'].tolist())
-X_test = np.array(df_test['resized_waferMap'].tolist())
+X_train = np.array(X_train.tolist())
+X_test = np.array(X_test.tolist())
 
-Y_train = df_train['failureNum']
-Y_test = df_test['failureNum']
 
 # 훈련 데이터 및 레이블 확인
 print("\n훈련 데이터 형태:")
@@ -119,19 +115,19 @@ plt.xlabel("label: [{}]".format(original_label))
 plt.show()
 
 # 'labels' 리스트를 사용하여 레이블 출력
-labels = ['Normal', 'Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch', 'Near-full']
+labels = ['Normal', 'Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Random', 'Scratch', 'Near-Full']
 print("\ntag:", labels[original_label])
 
 # print(X_train.iloc[my_sample])
 print('type: ', type(X_train[my_sample]))
 
-x_train = X_train / 2  # max(X_train) = 2
-x_test = X_test / 2  # max(X_test) = 2
+# X_train = X_train / 2  # max(X_train) = 2
+# X_test = X_test / 2  # max(X_test) = 2
 
 x_dim, y_dim = target_size
 x_dim, y_dim = int(x_dim), int(y_dim)
-x_train = x_train.reshape(len(X_train), x_dim, y_dim, 1)
-x_test = x_test.reshape(-1, x_dim, y_dim, 1)
+x_train = X_train.reshape(len(X_train), x_dim, y_dim, 1)
+x_test = X_test.reshape(-1, x_dim, y_dim, 1)
 
 print('\nx_train.shape:')
 print(x_train.shape)
@@ -158,10 +154,10 @@ fit_hist = model.fit(x_train, y_train, batch_size=128,
 
 val_acc = round(fit_hist.history['val_accuracy'][-1], 3)
 
-# 훈련/테스트 데이터 피클로 저장
-fea_all = df_train, df_test
-with open('./datasets/train_test_{}.pkl'.format(val_acc), 'wb') as file:
-    pickle.dump(fea_all, file)
+
+train_test = X_train, X_test, x_train, x_test, Y_train, Y_test, y_train, y_test
+with open('./datasets/train_test_data_{}.pkl'.format(val_acc), 'wb') as file:
+    pickle.dump(train_test, file)
 
 # 모델 피클로 저장
 model.save('./models/CNN_{}.h5'.format(val_acc))
@@ -176,6 +172,7 @@ plt.show()
 
 # 각 카테고리별로 랜덤한 이미지 하나씩 선택
 selected_images = []
+
 for i in range(len(labels)):
     category_indices = np.where(Y_test == i)[0]
     selected_index = random.choice(category_indices)
@@ -187,12 +184,13 @@ for i, index in enumerate(selected_images):
     true_label = labels[Y_test.iloc[index]]
 
     # 모델 예측
-    pred = model.predict(x_test[index].reshape(1, x_dim, y_dim, 1))
+    pred = model.predict(X_test[index].reshape(1, x_dim, y_dim, 1))
     predicted_label = labels[np.argmax(pred)]
 
     # 이미지와 예측 결과 시각화
+
     ax = axes[i // 3, i % 3]
-    ax.imshow(X_test[index], cmap='gray')
+    ax.imshow(X_test[index], cmap='gray', vmin=0, vmax=2)
     ax.set_title(f'True Label: {true_label}')
     text_color = 'red' if true_label != predicted_label else 'black'
     ax.set_xlabel(f'argmax: {predicted_label}', color=text_color)

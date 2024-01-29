@@ -118,7 +118,7 @@ class Exam(QWidget, form_window):  # 클래스 생성
 
         except Exception as e:
             print('error:', e)
-            print('error : Fine_category')
+            print('error : Find_category')
 
     def Choose_category(self, label):
         try:
