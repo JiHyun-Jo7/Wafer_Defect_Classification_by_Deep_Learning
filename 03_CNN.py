@@ -161,8 +161,8 @@ with open('./datasets/train_test_Copy_{}.pkl'.format(val_acc), 'wb') as file:
     pickle.dump(train_test, file)
 # with open('./datasets/train_test_Rotation_{}.pkl'.format(val_acc), 'wb') as file:
 #     pickle.dump(train_test, file)
-with open('./datasets/train_test_Smote_{}.pkl'.format(val_acc), 'wb') as file:
-    pickle.dump(train_test, file)
+# with open('./datasets/train_test_Smote_{}.pkl'.format(val_acc), 'wb') as file:
+#     pickle.dump(train_test, file)
 
 # 모델 피클로 저장
 model.save('./models/CNN_Copy_{}.h5'.format(val_acc))

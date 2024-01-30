@@ -18,8 +18,6 @@ pd.set_option('display.max_columns', None)
 
 form_window = uic.loadUiType('./classification_test.ui')[0]
 
-# X_train, X_test, x_train, x_test, Y_train, Y_test, y_train, y_test, label_mapping = np.load(
-#                 './datasets/train_test_data_0.953.pkl', allow_pickle=True)
 
 class Exam(QWidget, form_window):  # 클래스 생성
     def __init__(self):
@@ -33,7 +31,7 @@ class Exam(QWidget, form_window):  # 클래스 생성
         self.canvas = FigureCanvas(self.fig)
 
         # 모델 불러오기
-        model_path = '../test/models/CNN_0.953.h5'
+        model_path = '../test/models/CNN_0.917.h5'
         self.model = load_model(model_path)
 
         # 초기 화면 설정
@@ -63,7 +61,7 @@ class Exam(QWidget, form_window):  # 클래스 생성
 
     def Pickle_load(self):
         self.X_train, self.X_test, self.x_train, self.x_test, self.Y_train, self.Y_test, self.y_train, self.y_test, self.label_mapping = np.load(
-            './datasets/train_test_data_0.953.pkl', allow_pickle=True)
+            './datasets/train_test_Copy_0.917.pkl', allow_pickle=True)
         self.Y_test = self.Y_test.reset_index(drop=True)
 
 
