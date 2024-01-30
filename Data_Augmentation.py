@@ -11,8 +11,8 @@ df = pd.read_pickle("./datasets/LSWMD_CleanData.pickle")
 df.info()
 print(df['failureType'].value_counts())
 
-# 데이터프레임의 인덱스 재설정
-df.reset_index(drop=True, inplace=True)
+# # 데이터프레임의 인덱스 재설정
+# df.reset_index(drop=True, inplace=True)
 
 # 'Normal' 클래스의 샘플 수를 선택한 클래스에 맞춰 언더샘플링
 X = df.drop(columns=['failureType'])
@@ -24,7 +24,6 @@ df = pd.concat([X_under, pd.Series(Y_under, name='failureType')], axis=1)
 
 # 최종 결과 확인
 print(df['failureType'].value_counts())
-
 
 # 데이터 복제 증강
 df_copy = df.copy()
@@ -44,11 +43,11 @@ replication_factors = {'Loc': 2, 'Scratch': 7, 'Random': 11, 'Donut': 17, 'Near-
 for failure_type, replication_factor in replication_factors.items():
     df_copy = replicate_rows(df_copy, failure_type, replication_factor)
 
-print('df_copy')
-# print(df_copy['failureType'].value_counts())
+print('복제 후: ')
+print(df_copy['failureType'].value_counts())
 with open('./datasets/LSWMD_Copy.pickle', 'wb') as f:
-    pickle.dump(df, f)
-
+    pickle.dump(df_copy, f)
+df_copy.info()
 
 # 데이터 회전, 반전 증강
 df_rotation = df.copy()
@@ -195,11 +194,11 @@ for degrees in degrees_to_rotate:
     selected_Near_full['waferMap'] = selected_Near_full['waferMap'].apply(lambda x: rotate_wafermap(x, degrees))
     df_rotation = pd.concat([df_rotation, selected_Near_full], ignore_index=True)
 
-print('df_rotation')
+print('회전 적용 후: ')
 print(df_rotation['failureType'].value_counts())
-
+df_rotation.info()
 with open('./datasets/LSWMD_Rotation.pickle', 'wb') as f:
-    pickle.dump(df, f)
+    pickle.dump(df_rotation, f)
 
 
 # SMOTE 데이터 생성
@@ -220,8 +219,6 @@ else: target_size = (median_y, median_y)
 print("Median :", target_size)
 
 df_smote.drop(['x', 'y'], axis=1, inplace=True)
-df_smote.info()
-
 
 # 이미지 크기를 통일시키는 함수
 def resize_wafer_map(wafer_map, target_size, resample_method=Image.BILINEAR):
@@ -247,8 +244,8 @@ print('finish resizing image')
 X = np.array(df_smote['resized_waferMap'].tolist())  # 2D 넘파이 배열로 변환
 y = df_smote['failureType']
 
-# SMOTE 적용 전 클래스 분포 확인
-print("원본 클래스 분포:\n", y.value_counts())
+# # SMOTE 적용 전 클래스 분포 확인
+# print("원본 클래스 분포:\n", y.value_counts())
 
 # 이미지 데이터를 1D로 펼친 후 SMOTE 적용
 X_flat = X.reshape(X.shape[0], -1)
@@ -263,5 +260,6 @@ df_smote = pd.DataFrame({
 # SMOTE 적용 후 클래스 분포 확인
 print("SMOTE 적용 후 클래스 분포:\n", df_smote['failureType'].value_counts())
 
+df_smote.info()
 with open('./datasets/LSWMD_Smote.pickle', 'wb') as f:
-    pickle.dump(df, f)
+    pickle.dump(df_smote, f)
