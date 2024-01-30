@@ -261,7 +261,7 @@ df_smote = pd.DataFrame({
     'failureType': y_resampled})
 
 # SMOTE 적용 후 클래스 분포 확인
-print("SMOTE 적용 후 클래스 분포:\n", df_smote[피클을 완벽하게 만들다'failureType'].value_counts())
+print("SMOTE 적용 후 클래스 분포:\n", df_smote['failureType'].value_counts())
 
 with open('./datasets/LSWMD_Smote.pickle', 'wb') as f:
     pickle.dump(df, f)
