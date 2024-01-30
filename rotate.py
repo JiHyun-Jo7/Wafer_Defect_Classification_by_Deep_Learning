@@ -1,17 +1,18 @@
 import numpy as np
 import pandas as pd
+import smote
 from sklearn.model_selection import train_test_split
 from imblearn.over_sampling import SMOTE
 from imblearn.under_sampling import RandomUnderSampler
 import pickle
+from PIL import Image
 
 df = pd.read_pickle("./datasets/LSWMD_CleanData.pickle")
 df.info()
 print(df['failureType'].value_counts())
 
-# 데이터프레임 읽기
-df = pd.read_pickle("./datasets/LSWMD_CleanData.pickle")
-
+# 데이터프레임의 인덱스 재설정
+df.reset_index(drop=True, inplace=True)
 
 # 'Normal' 클래스의 샘플 수를 선택한 클래스에 맞춰 언더샘플링
 X = df.drop(columns=['failureType'])
@@ -200,3 +201,67 @@ print(df_rotation['failureType'].value_counts())
 with open('./datasets/LSWMD_Rotation.pickle', 'wb') as f:
     pickle.dump(df, f)
 
+
+# SMOTE 데이터 생성
+df_smote = df.copy()
+
+# 각 행의 x 좌표와 y 좌표를 추출하여 새로운 열을 생성
+df_smote['x'] = df_smote['waferMapDim'].apply(lambda x: x[0])
+df_smote['y'] = df_smote['waferMapDim'].apply(lambda x: x[1])
+
+# 각 차원에 대한 중앙값 계산
+median_x = df_smote['x'].median()
+median_y = df_smote['y'].median()
+
+# 이미지를 정사각형으로 만들기
+if median_x > median_y:
+    target_size = (median_x, median_x)
+else: target_size = (median_y, median_y)
+print("Median :", target_size)
+
+df_smote.drop(['x', 'y'], axis=1, inplace=True)
+df_smote.info()
+
+
+# 이미지 크기를 통일시키는 함수
+def resize_wafer_map(wafer_map, target_size, resample_method=Image.BILINEAR):
+    try:
+        # Numpy 배열을 이미지로 변환
+        image_array = np.array(wafer_map)
+        image = Image.fromarray(image_array.astype('uint8'))  # Numpy 배열을 이미지로 변환
+
+        # 이미지 크기 변환
+        resized_image = image.resize((int(target_size[1]), int(target_size[0])), resample=resample_method)
+
+        return np.array(resized_image)
+    except Exception as e:
+        print(f"Error in resizing: {e}")
+        return None
+
+
+# 'resized_waferMap' 열에 변환한 데이터 추가
+df_smote['resized_waferMap'] = df_smote['waferMap'].apply(lambda x: resize_wafer_map(x, target_size))
+print('finish resizing image')
+
+# 이미지 데이터와 클래스 정보 추출
+X = np.array(df_smote['resized_waferMap'].tolist())  # 2D 넘파이 배열로 변환
+y = df_smote['failureType']
+
+# SMOTE 적용 전 클래스 분포 확인
+print("원본 클래스 분포:\n", y.value_counts())
+
+# 이미지 데이터를 1D로 펼친 후 SMOTE 적용
+X_flat = X.reshape(X.shape[0], -1)
+smote = SMOTE(random_state=42)
+X_resampled, y_resampled = smote.fit_resample(X_flat, y)
+
+# SMOTE로 증강된 데이터를 새로운 데이터프레임에 저장
+df_smote = pd.DataFrame({
+    'waferMap': [image.reshape(X.shape[1:]) for image in X_resampled],
+    'failureType': y_resampled})
+
+# SMOTE 적용 후 클래스 분포 확인
+print("SMOTE 적용 후 클래스 분포:\n", df_smote[피클을 완벽하게 만들다'failureType'].value_counts())
+
+with open('./datasets/LSWMD_Smote.pickle', 'wb') as f:
+    pickle.dump(df, f)
