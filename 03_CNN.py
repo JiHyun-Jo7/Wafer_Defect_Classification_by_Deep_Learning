@@ -15,7 +15,9 @@ warnings.filterwarnings("ignore")  # 경고문 출력 제거
 np.set_printoptions(threshold=sys.maxsize)  # 배열 전체 출력
 pd.set_option('display.max_columns', None)
 
-df = pd.read_pickle("./datasets/LSWMD_Normal_count.pickle")
+df = pd.read_pickle("./datasets/LSWMD_Copy.pickle")
+# df = pd.read_pickle("./datasets/LSWMD_Rotation.pickle")
+# df = pd.read_pickle("./datasets/LSWMD_Smote.pickle")
 df.reset_index(drop=True, inplace=True)
 df.info()
 print(df[['failureType', 'failureNum']])
@@ -156,11 +158,17 @@ val_acc = round(fit_hist.history['val_accuracy'][-1], 3)
 
 
 train_test = X_train, X_test, x_train, x_test, Y_train, Y_test, y_train, y_test
-with open('./datasets/train_test_data_{}.pkl'.format(val_acc), 'wb') as file:
+with open('./datasets/train_test_Copy_{}.pkl'.format(val_acc), 'wb') as file:
     pickle.dump(train_test, file)
+# with open('./datasets/train_test_Rotation_{}.pkl'.format(val_acc), 'wb') as file:
+#     pickle.dump(train_test, file)
+# with open('./datasets/train_test_Smote_{}.pkl'.format(val_acc), 'wb') as file:
+#     pickle.dump(train_test, file)
 
 # 모델 피클로 저장
-model.save('./models/CNN_{}.h5'.format(val_acc))
+model.save('./models/CNN_Copy_{}.h5'.format(val_acc))
+# model.save('./models/CNN_Rotation_{}.h5'.format(val_acc))
+# model.save('./models/CNN_Smote_{}.h5'.format(val_acc))
 
 score = model.evaluate(x_test, y_test, verbose=0)
 print('Final test set accuracy', score[1])
