@@ -31,7 +31,7 @@ class Exam(QWidget, form_window):  # 클래스 생성
         self.canvas = FigureCanvas(self.fig)
 
         # 모델 불러오기
-        model_path = '../test/models/CNN_0.917.h5'
+        model_path = './models/CNN_Copy_0.932.h5'
         self.model = load_model(model_path)
 
         # 초기 화면 설정
@@ -60,8 +60,8 @@ class Exam(QWidget, form_window):  # 클래스 생성
         self.lb_label.setText('')
 
     def Pickle_load(self):
-        self.X_train, self.X_test, self.x_train, self.x_test, self.Y_train, self.Y_test, self.y_train, self.y_test, self.label_mapping = np.load(
-            './datasets/train_test_Copy_0.917.pkl', allow_pickle=True)
+        self.X_train, self.X_test, self.x_train, self.x_test, self.Y_train, self.Y_test, self.y_train, self.y_test = np.load(
+            './datasets/train_test_Copy_0.932.pkl', allow_pickle=True)
         self.Y_test = self.Y_test.reset_index(drop=True)
 
 
@@ -133,6 +133,9 @@ class Exam(QWidget, form_window):  # 클래스 생성
 
     def Plot_wafer_img(self, index):
         try:
+            if len(plt.get_fignums()) > 0:
+                plt.close()
+
             self.lb_img.setText("")
             self.Pickle_load()
             true_label = self.labels[self.Y_test[index]]
@@ -148,7 +151,6 @@ class Exam(QWidget, form_window):  # 클래스 생성
             ax.set_title(f'True Label: {true_label}')
             ax.set_xticks([])
             ax.set_yticks([])
-            ax.legend([])
             self.canvas.draw()
 
             q_img = QImage(self.canvas.buffer_rgba(), self.canvas.get_width_height()[0], self.canvas.get_width_height()[1],
@@ -158,7 +160,11 @@ class Exam(QWidget, form_window):  # 클래스 생성
             # QPixmap을 QLabel에 설정하여 이미지 표시
             self.lb_img.setPixmap(pixmap)
 
-            print(self.X_test[index])
+            # # 이미지 플로팅 및 레이블 확인
+            # plt.imshow(self.X_test[index], cmap='gray')  # cmap = 'gray': 흑백 처리
+            # plt.title("label: [{}]".format(true_label))
+            # plt.xlabel(self.Y_test[index])
+            # plt.show()
 
         except Exception as e:
             print('error:', e)
@@ -167,7 +173,8 @@ class Exam(QWidget, form_window):  # 클래스 생성
     def Predict(self, index):
         try:
             self.Pickle_load()
-            pred = self.model.predict(self.X_test[index].reshape(1, 37, 37, 1))
+            print(self.X_test[index].shape)
+            pred = self.model.predict(self.X_test[index].reshape(1, 38, 38, 1))
             print(pred)
             max_pred = np.max(pred)
             max_percentage = max_pred * 100
